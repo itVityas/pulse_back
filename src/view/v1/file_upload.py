@@ -20,7 +20,7 @@ async def file_upload(
             raise HTTPException(status_code=400, detail="Только файлы Excel (.xlsx, .xls) разрешены")
         contents = await file.read()
         file_stream = BytesIO(contents)
-        await file_upload_handle(file_stream)
+        await file_upload_handle(file_stream, parameters.currency_id, parameters.shop_id, parameters.date, session)
         return {"filename": file.filename}
     except Exception:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Ошибка загрузки файла")
