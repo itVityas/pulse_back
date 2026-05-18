@@ -13,6 +13,8 @@ async def file_upload(
                         file: UploadFile = File(),
                         session=Depends(get_session)):
     try:
+        if not file.filename.endswith(('.xlsx', '.xls')):
+            raise HTTPException(status_code=400, detail="Только файлы Excel (.xlsx, .xls) разрешены")
         print(file.filename)
         print(parameters)
         return {"filename": file.filename}
