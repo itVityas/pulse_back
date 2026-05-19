@@ -24,12 +24,7 @@
         "width": 3840,
         "height": 2160
     },
-        {
-        "name": "4K Cinema",
-        "width": 4096,
-        "height": 2160
-    },
-        {
+    {
         "name": "5K",
         "width": 5120,
         "height": 2880

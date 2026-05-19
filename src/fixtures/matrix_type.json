@@ -9,9 +9,15 @@
         "name": "OLED"
     },
     {
-        "name": "QD-OLED"
+        "name": "QLED"
     },
     {
-        "name": "QLED"
+        "name": "TN"
+    },
+    {
+        "name": "DLED"
+    },
+    {
+        "name": "LED"
     }
 ]
