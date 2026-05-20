@@ -5,5 +5,5 @@ from repository.base import BaseData
 
 
 class CurrencyData(BaseData):
-    def __init__(self, model: Currency, session: AsyncSession):
-        super().__init__(model=model, session=session)
+    def __init__(self, session: AsyncSession, model: Currency = Currency):
+        super().__init__(model=Currency, session=session)

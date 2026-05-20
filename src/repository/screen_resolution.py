@@ -6,9 +6,12 @@ from repository.base import BaseData
 
 
 class ScreenResolutionData(BaseData):
-    def __init__(self, model: ScreenResolution, session: AsyncSession):
+    def __init__(
+                    self,
+                    session: AsyncSession,
+                    model: ScreenResolution = ScreenResolution):
         super().__init__(
-            model=model, session=session
+            model=ScreenResolution, session=session
         )
 
     async def get_by_name(self, name: str):

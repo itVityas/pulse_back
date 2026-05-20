@@ -6,4 +6,4 @@ from repository.base import BaseData
 
 class ShopData(BaseData):
     def __init__(self, model: Shop, session: AsyncSession):
-        super().__init__(model, session)
+        super().__init__(Shop, session)

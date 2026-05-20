@@ -6,9 +6,9 @@ from .base import BaseData
 
 
 class CategoryData(BaseData):
-    def __init__(self, model: Category, session: AsyncSession):
+    def __init__(self, session: AsyncSession, model: Category = Category):
         super().__init__(
-            model=model, session=session
+            model=Category, session=session
         )
 
     async def get_by_name(self, name: str):

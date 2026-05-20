@@ -6,8 +6,8 @@ from repository.base import BaseData
 
 
 class MatrixTypeData(BaseData):
-    def __init__(self, model: MatrixType, session: AsyncSession):
-        super().__init__(model=model, session=session)
+    def __init__(self, session: AsyncSession, model: MatrixType = MatrixType):
+        super().__init__(model=MatrixType, session=session)
 
     async def get_by_name(self, name: str):
         slct = select(self.model).where(self.model.name == name)

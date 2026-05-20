@@ -12,7 +12,7 @@ from service.security import (
 class UserData(BaseData):
     def __init__(self, model: User, session: AsyncSession):
         super().__init__(
-            model=model, session=session
+            model=User, session=session
         )
 
     async def get_by_username(self, username: str) -> User:
@@ -30,7 +30,11 @@ class UserData(BaseData):
         await self.session.commit()
         return user
 
-    async def change_password(self, id: int, new_password: str, old_password: str) -> User:
+    async def change_password(
+                self, id: int,
+                new_password: str,
+                old_password: str
+                            ) -> User:
         query = select(self.model).where(self.model.id == id)
         result = await self.session.execute(query)
         user = result.scalar_one_or_none()

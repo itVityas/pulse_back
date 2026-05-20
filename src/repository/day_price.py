@@ -8,8 +8,8 @@ from repository.base import BaseData
 
 
 class DayPriceData(BaseData):
-    def __init__(self, model: DayPrice, session: AsyncSession):
-        super().__init__(model=model, session=session)
+    def __init__(self, session: AsyncSession, model: DayPrice = DayPrice):
+        super().__init__(model=DayPrice, session=session)
 
     async def get_by_shop_date(self, shop_id: int, date):
         slct = select(self.model).join(

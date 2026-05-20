@@ -6,8 +6,8 @@ from repository.base import BaseData
 
 
 class OSData(BaseData):
-    def __init__(self, model: OS, session: AsyncSession):
-        super().__init__(model=model, session=session)
+    def __init__(self, session: AsyncSession, model: OS = OS):
+        super().__init__(model=OS, session=session)
 
     async def get_by_name(self, name: str) -> OS:
         statement = select(OS).where(OS.name == name)

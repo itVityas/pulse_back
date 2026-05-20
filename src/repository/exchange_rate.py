@@ -5,5 +5,7 @@ from repository.base import BaseData
 
 
 class ExchangeRateData(BaseData):
-    def __init__(self, model: ExchangeRate, session: AsyncSession):
-        super().__init__(model=model, session=session)
+    def __init__(
+                    self, session: AsyncSession,
+                    model: ExchangeRate = ExchangeRate):
+        super().__init__(model=ExchangeRate, session=session)
