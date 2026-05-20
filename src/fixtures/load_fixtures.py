@@ -129,7 +129,7 @@ class FixtureLoad:
             name = line.get('name')
             url = line.get('url')
 
-            result = await self.session.execute(select(Category).where(Category.name == name))
+            result = await self.session.execute(select(Shop).where(Shop.name == name))
             existing_shop = result.scalar_one_or_none()
 
             if not existing_shop:
