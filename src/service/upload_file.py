@@ -134,9 +134,6 @@ async def file_upload_handle(
                             brand = None
                             continue
                         brand = await BrandData(Brand, session).get_by_name(brand_buf)
-                        if not brand:
-                            brand_model = Brand(name=brand_buf)
-                            brand = await BrandData(Brand, session).create_by_model(brand_model)
                         continue
                     if indx == title_dict.get('screen_resolution'):
                         if cell is None:
