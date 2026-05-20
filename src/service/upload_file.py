@@ -78,7 +78,7 @@ async def file_upload_handle(
                     if indx == 0 and cell is None:
                         break_exit = True
                         break
-                    if indx == 0:
+                    if indx == 1:
                         link = str(cell)
                         continue
                     if indx == 2:
@@ -127,6 +127,12 @@ async def file_upload_handle(
                         if cell is None:
                             break
                         brand_buf = str(cell).lower().replace('.', '')
+                        if brand_buf.find('') is None or brand_buf == '':
+                            brand = None
+                            continue
+                        if brand_buf.find('телевизор') != -1:
+                            brand = None
+                            continue
                         brand = await BrandData(Brand, session).get_by_name(brand_buf)
                         if not brand:
                             brand_model = Brand(name=brand_buf)
