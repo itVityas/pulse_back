@@ -11,6 +11,7 @@ from model.category import Category
 from model.matrix_type import MatrixType
 from model.os import OS
 from model.screen_resolution import ScreenResolution
+from model.shop import Shop
 
 
 class FixtureLoad:
@@ -118,6 +119,27 @@ class FixtureLoad:
                 self.session.add(new_os)
                 await self.session.commit()
 
+    async def load_shop(self, fixture_file: Path):
+        if not fixture_file.exists():
+            raise FileNotFoundError(f"Fixture file {fixture_file} not found")
+        with open(fixture_file, 'r') as file:
+            fixture_data = json.load(file)
+
+        for line in fixture_data:
+            name = line.get('name')
+            url = line.get('url')
+
+            result = await self.session.execute(select(Category).where(Category.name == name))
+            existing_shop = result.scalar_one_or_none()
+
+            if not existing_shop:
+                new_shop = Shop(
+                    name=name,
+                    url=url,
+                )
+                self.session.add(new_shop)
+                await self.session.commit()
+
     async def load_screen_resolutions(self, fixture_file: Path):
         if not fixture_file.exists():
             raise FileNotFoundError(f"Fixture file {fixture_file} not found")
@@ -156,3 +178,5 @@ class FixtureLoad:
                 await self.load_os(fixture_file)
             if 'screen_resolution' in fixture_file.name:
                 await self.load_screen_resolutions(fixture_file)
+            if 'shop' in fixture_file.name:
+                await self.load_shop(fixture_file)
