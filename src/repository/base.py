@@ -22,6 +22,12 @@ class BaseData:
         await self.session.refresh(db_obj)
         return db_obj
 
+    async def create_by_model(self, model: Type[ModelType]):
+        self.session.add(model)
+        await self.session.commit()
+        await self.session.refresh(model)
+        return model
+
     async def get_one(self, id: int):
         stmt = select(self.model).where(self.model.id == id)
         result = await self.session.execute(stmt)

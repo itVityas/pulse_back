@@ -90,7 +90,11 @@ async def file_upload_handle(
                     if indx == title_dict.get('diagonal'):
                         if cell is None:
                             break
-                        diagonal = int(float(str(cell).split('"')[0]))
+                        cell_str = str(cell).lower().replace(' ', '').replace('дюйма', '')
+                        try:
+                            diagonal = int(float(cell_str.split('"')[0]))
+                        except Exception as ex:
+                            print(ex)
                         continue
                     if indx == title_dict.get('refresh_rate'):
                         if cell is None:
@@ -122,10 +126,11 @@ async def file_upload_handle(
                     if indx == title_dict.get('brand'):
                         if cell is None:
                             break
-                        brand_buf = str(cell).lower()
+                        brand_buf = str(cell).lower().replace('.', '')
                         brand = await BrandData(Brand, session).get_by_name(brand_buf)
                         if not brand:
-                            brand = await BrandData(Brand, session).create({'name': brand_buf})
+                            brand_model = Brand(name=brand_buf)
+                            brand = await BrandData(Brand, session).create_by_model(brand_model)
                         continue
                     if indx == title_dict.get('screen_resolution'):
                         if cell is None:
@@ -164,6 +169,9 @@ async def file_upload_handle(
                             os = await OSData(OS, session).get_by_name('WildRed')
                         elif os_buf.find('vidaa') != -1:
                             os = await OSData(OS, session).get_by_name('VIDAA')
+                        elif os_buf.find('без') != -1:
+                            os = None
+                            category = await CategoryData(Category, session).get_by_name('Не смарт')
                         continue
 
                 if break_exit:
