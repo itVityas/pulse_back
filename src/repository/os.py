@@ -6,7 +6,7 @@ from repository.base import BaseData
 
 
 class OSData(BaseData):
-    def __init__(self, session: AsyncSession, model: OS = OS):
+    def __init__(self, session: AsyncSession):
         super().__init__(model=OS, session=session)
 
     async def get_by_name(self, name: str) -> OS:

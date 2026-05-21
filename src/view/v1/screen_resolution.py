@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 
 from settings.database import get_session
-from model.screen_resolution import ScreenResolution
 from repository.screen_resolution import ScreenResolutionData
 from schema.pagination import PaginationResponseSchema
 from schema.screen_resolution import (
@@ -42,7 +41,7 @@ async def screen_resolutions_list(
     - Высота экрана: ?height=1080
     """
     try:
-        screen_resolution_data = ScreenResolutionData(ScreenResolution, session)
+        screen_resolution_data = ScreenResolutionData(session)
         screen_resolutions, total = await screen_resolution_data.get_multi(
             limit=pagination.limit,
             skip=pagination.offset,
@@ -67,7 +66,7 @@ async def screen_resolutions_list(
 @router.post('/', response_model=ScreenResolutionSmallSchema)
 async def screen_resolution_create(screen_resolution: ScreenResolutionSmallSchema, session=Depends(get_session)):
     try:
-        screen_resolution_data = ScreenResolutionData(ScreenResolution, session)
+        screen_resolution_data = ScreenResolutionData(session)
         new_screen_resolution = await screen_resolution_data.create(screen_resolution)
         return ScreenResolutionSmallSchema.model_validate(new_screen_resolution)
     except Exception as e:
@@ -80,7 +79,7 @@ async def screen_resolution_update(
         screen_resolution: ScreenResolutionUpdateSchema,
         session=Depends(get_session)):
     try:
-        screen_resolution_data = ScreenResolutionData(ScreenResolution, session)
+        screen_resolution_data = ScreenResolutionData(session)
         model = await screen_resolution_data.update(id, screen_resolution)
         return ScreenResolutionSmallSchema.model_validate(model)
     except Exception as e:
@@ -90,7 +89,7 @@ async def screen_resolution_update(
 @router.delete('/delete/{id}/', status_code=status.HTTP_204_NO_CONTENT)
 async def screen_resolution_delete(id: int, session=Depends(get_session)):
     try:
-        screen_resolution_data = ScreenResolutionData(ScreenResolution, session)
+        screen_resolution_data = ScreenResolutionData(session)
         await screen_resolution_data.delete(id)
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

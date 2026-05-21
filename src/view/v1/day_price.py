@@ -46,7 +46,7 @@ async def day_price_list(
     - Фильтр по date (меньше): ?date__lte=2020-01-01
 """
     try:
-        day_price_data = DayPriceData(DayPrice, session)
+        day_price_data = DayPriceData(session)
         eager_options = [
             selectinload(DayPrice.shop_link).options(
                 selectinload(ShopLink.shop),
@@ -83,7 +83,7 @@ async def day_price_list(
 @router.post('/', response_model=DayPriceSmallResponseSchema)
 async def day_price_create(day_price: DayPricePostSchema, session=Depends(get_session)):
     try:
-        day_price_data = DayPriceData(DayPrice, session)
+        day_price_data = DayPriceData(session)
         new_day_price = await day_price_data.create(day_price)
         return DayPriceSmallResponseSchema.model_validate(new_day_price)
     except Exception as e:
@@ -93,7 +93,7 @@ async def day_price_create(day_price: DayPricePostSchema, session=Depends(get_se
 @router.patch('/patch/{id}/', response_model=DayPriceSmallResponseSchema)
 async def day_price_update(id: int, day_price: DayPriceUpdateSchema, session=Depends(get_session)):
     try:
-        day_price_data = DayPriceData(DayPrice, session)
+        day_price_data = DayPriceData(session)
         model = await day_price_data.update(id, day_price)
         return DayPriceSmallResponseSchema.model_validate(model)
     except Exception as e:
@@ -103,7 +103,7 @@ async def day_price_update(id: int, day_price: DayPriceUpdateSchema, session=Dep
 @router.delete('/delete/{id}/', status_code=status.HTTP_204_NO_CONTENT)
 async def day_price_delete(id: int, session=Depends(get_session)):
     try:
-        day_price_data = DayPriceData(DayPrice, session)
+        day_price_data = DayPriceData(session)
         await day_price_data.delete(id)
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

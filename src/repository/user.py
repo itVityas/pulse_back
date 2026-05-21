@@ -10,7 +10,7 @@ from service.security import (
 
 
 class UserData(BaseData):
-    def __init__(self, model: User, session: AsyncSession):
+    def __init__(self, session: AsyncSession):
         super().__init__(
             model=User, session=session
         )

@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 
 from settings.database import get_session
-from model.matrix_type import MatrixType
 from repository.matrix_type import MatrixTypeData
 from schema.pagination import PaginationResponseSchema
 from schema.matrix_type import (
@@ -37,7 +36,7 @@ async def matrix_type_list(pagination: MatrixTypeParamsSchema = Depends(), sessi
     - Название заканчивается на: ?name_iendswith=LED
     """
     try:
-        matrix_type_data = MatrixTypeData(MatrixType, session)
+        matrix_type_data = MatrixTypeData(session)
         matrix_type_list, total = await matrix_type_data.get_multi(
             limit=pagination.limit,
             skip=pagination.offset,
@@ -62,7 +61,7 @@ async def matrix_type_list(pagination: MatrixTypeParamsSchema = Depends(), sessi
 @router.post('/', response_model=MatrixTypeSmallSchema)
 async def matrix_type_create(matrix_type: MatrixTypeSmallSchema, session=Depends(get_session)):
     try:
-        matrix_type_data = MatrixTypeData(MatrixType, session)
+        matrix_type_data = MatrixTypeData(session)
         new_matrix_type = await matrix_type_data.create(matrix_type)
         return MatrixTypeSmallSchema.model_validate(new_matrix_type)
     except Exception as e:
@@ -72,7 +71,7 @@ async def matrix_type_create(matrix_type: MatrixTypeSmallSchema, session=Depends
 @router.patch('/patch/{id}/', response_model=MatrixTypeSmallSchema)
 async def matrix_type_update(id: int, matrix_type: MatrixTypeUpdateSchema, session=Depends(get_session)):
     try:
-        matrix_type_data = MatrixTypeData(MatrixType, session)
+        matrix_type_data = MatrixTypeData(session)
         model = await matrix_type_data.update(id, matrix_type)
         return MatrixTypeSmallSchema.model_validate(model)
     except Exception as e:
@@ -82,7 +81,7 @@ async def matrix_type_update(id: int, matrix_type: MatrixTypeUpdateSchema, sessi
 @router.delete('/delete/{id}/', status_code=status.HTTP_204_NO_CONTENT)
 async def matrix_type_delete(id: int, session=Depends(get_session)):
     try:
-        matrix_type_data = MatrixTypeData(MatrixType, session)
+        matrix_type_data = MatrixTypeData(session)
         await matrix_type_data.delete(id)
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

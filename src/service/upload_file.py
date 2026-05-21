@@ -168,9 +168,8 @@ async def file_upload_handle(
                             os = await OSData(OS, session).get_by_name('WildRed')
                         elif os_buf.find('vidaa') != -1:
                             os = await OSData(OS, session).get_by_name('VIDAA')
-                        elif os_buf.find('без') != -1:
-                            os = None
-                            category = await CategoryData(Category, session).get_by_name('Не смарт')
+                        elif os_buf.find('без') != -1 or category == 'Без Smart TV':
+                            os = await OSData(OS, session).get_by_name('Без Smart TV')
                         continue
 
                 if break_exit:

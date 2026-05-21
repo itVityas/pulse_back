@@ -10,7 +10,7 @@ from repository.base import BaseData
 
 
 class DayPriceData(BaseData):
-    def __init__(self, session: AsyncSession, model: DayPrice = DayPrice):
+    def __init__(self, session: AsyncSession):
         super().__init__(model=DayPrice, session=session)
 
     async def get_by_shop_date(self, shop_id: int, date) -> Optional[List[DayPrice]]:

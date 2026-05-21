@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 
 from settings.database import get_session
-from model.tv import TV
 from repository.tv import TVData
 from schema.pagination import PaginationResponseSchema
 from schema.tv import (
@@ -45,7 +44,7 @@ async def tv_list(pagination: TVFilterSchema = Depends(), session=Depends(get_se
     - Фильтр по диагонали: ?diagonal=32
     """
     try:
-        tv_data = TVData(TV, session)
+        tv_data = TVData(session)
         tv_list, total = await tv_data.get_multi(
             skip=pagination.offset,
             limit=pagination.limit,
@@ -74,7 +73,7 @@ async def tv_list(pagination: TVFilterSchema = Depends(), session=Depends(get_se
 @router.post('/', response_model=TVSmallResponseSchema)
 async def tv_create(tv: TVPOSTSchema, session=Depends(get_session)):
     try:
-        tv_data = TVData(TV, session)
+        tv_data = TVData(session)
         new_tv = await tv_data.create(tv)
         return TVSmallResponseSchema.model_validate(new_tv)
     except Exception as e:
@@ -84,7 +83,7 @@ async def tv_create(tv: TVPOSTSchema, session=Depends(get_session)):
 @router.patch('/patch/{id}/', response_model=TVSmallResponseSchema)
 async def tv_update(id: int, tv: TVUpdateSchema, session=Depends(get_session)):
     try:
-        tv_data = TVData(TV, session)
+        tv_data = TVData(session)
         model = await tv_data.update(id, tv)
         return TVSmallResponseSchema.model_validate(model)
     except Exception as e:
@@ -94,7 +93,7 @@ async def tv_update(id: int, tv: TVUpdateSchema, session=Depends(get_session)):
 @router.delete('/delete/{id}/', status_code=status.HTTP_204_NO_CONTENT)
 async def tv_delete(id: int, session=Depends(get_session)):
     try:
-        tv_data = TVData(TV, session)
+        tv_data = TVData(session)
         await tv_data.delete(id)
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

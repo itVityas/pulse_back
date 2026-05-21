@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 
 from settings.database import get_session
-from model.shop import Shop
 from repository.shop import ShopData
 from schema.pagination import PaginationResponseSchema
 from schema.shop import (
@@ -42,7 +41,7 @@ async def shops_get(
     - URL магазина: ?url=https://www.ozon.ru/
     """
     try:
-        shop_data = ShopData(Shop, session)
+        shop_data = ShopData(session)
         shops, total = await shop_data.get_multi(
             limit=pagination.limit,
             skip=pagination.offset,
@@ -66,7 +65,7 @@ async def shops_get(
 @router.post('/', response_model=ShopSmallSchema)
 async def shop_create(shop: ShopSmallSchema, session=Depends(get_session)):
     try:
-        shop_data = ShopData(Shop, session)
+        shop_data = ShopData(session)
         new_shop = await shop_data.create(shop)
         return ShopSmallSchema.model_validate(new_shop)
     except Exception as e:
@@ -76,7 +75,7 @@ async def shop_create(shop: ShopSmallSchema, session=Depends(get_session)):
 @router.patch('/patch/{id}/', response_model=ShopSmallSchema)
 async def shop_update(id: int, shop: ShopUpdateShema, session=Depends(get_session)):
     try:
-        shop_data = ShopData(Shop, session)
+        shop_data = ShopData(session)
         model = await shop_data.update(id, shop)
         return ShopSmallSchema.model_validate(model)
     except Exception as e:
@@ -86,7 +85,7 @@ async def shop_update(id: int, shop: ShopUpdateShema, session=Depends(get_sessio
 @router.delete('/delete/{id}/', status_code=status.HTTP_204_NO_CONTENT)
 async def shop_delete(id: int, session=Depends(get_session)):
     try:
-        shop_data = ShopData(Shop, session)
+        shop_data = ShopData(session)
         await shop_data.delete(id)
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

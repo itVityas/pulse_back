@@ -5,5 +5,5 @@ from repository.base import BaseData
 
 
 class ShopData(BaseData):
-    def __init__(self, model: Shop, session: AsyncSession):
+    def __init__(self, session: AsyncSession):
         super().__init__(Shop, session)

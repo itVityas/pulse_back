@@ -6,7 +6,7 @@ from repository.base import BaseData
 
 
 class BrandData(BaseData):
-    def __init__(self, session: AsyncSession, model: Brand = Brand):
+    def __init__(self, session: AsyncSession,):
         super().__init__(model=Brand, session=session)
 
     async def get_by_name(self, name: str):

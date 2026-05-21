@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from schema.currency import (CurrencyFullSchema, CurrencySmallSchema, CurrencyPaginationParamsSchema)
 from repository.currency import CurrencyData
-from model.currency import Currency
 from settings.database import get_session
 from schema.pagination import PaginationResponseSchema
 
@@ -33,7 +32,7 @@ async def currency_list(
     - Фильтр по окончанию названия: ?name__iendswith=D
     """
     try:
-        currency_model = CurrencyData(Currency, session)
+        currency_model = CurrencyData(session)
         currencies, total = await currency_model.get_multi(
             skip=pagination.offset,
             limit=pagination.limit,
@@ -56,7 +55,7 @@ async def currency_list(
 @router.post('/', response_model=CurrencyFullSchema, status_code=status.HTTP_201_CREATED)
 async def currency_create(currency: CurrencySmallSchema, session=Depends(get_session)):
     try:
-        currency_data = CurrencyData(Currency, session)
+        currency_data = CurrencyData(session)
         new_currency = await currency_data.create(currency)
         return CurrencyFullSchema.model_validate(new_currency)
     except Exception as e:
@@ -66,7 +65,7 @@ async def currency_create(currency: CurrencySmallSchema, session=Depends(get_ses
 @router.put('/update/{id}/', response_model=CurrencyFullSchema)
 async def currency_change(id: int, currensy: CurrencySmallSchema, session=Depends(get_session)):
     try:
-        currency_data = CurrencyData(Currency, session)
+        currency_data = CurrencyData(session)
         model = await currency_data.update(id, currensy)
         return CurrencyFullSchema.model_validate(model)
     except Exception as e:
@@ -76,7 +75,7 @@ async def currency_change(id: int, currensy: CurrencySmallSchema, session=Depend
 @router.delete('/delete/{id}/', status_code=status.HTTP_204_NO_CONTENT)
 async def currency_delete(id: int, session=Depends(get_session)):
     try:
-        currency_data = CurrencyData(Currency, session)
+        currency_data = CurrencyData(session)
         await currency_data.delete(id)
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

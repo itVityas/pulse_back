@@ -41,7 +41,7 @@ async def exchange_rate_list(
     - Фильтр для id валюты к которой обмениваем: base_currency_id=3
     """
     try:
-        exchage_rate_model = ExchangeRateData(ExchangeRate, session)
+        exchage_rate_model = ExchangeRateData(session)
         eager_options = [selectinload(ExchangeRate.currency), selectinload(ExchangeRate.base_currency)]
         exchage_rate_list, total = await exchage_rate_model.get_multi(
             skip=pagination.offset,
@@ -67,7 +67,7 @@ async def exchange_rate_list(
 @router.post('/', response_model=ExchangeRateSimpleSchema)
 async def exchange_rate_create(exchange_rate: ExchangeRateSmallSchema, session=Depends(get_session)):
     try:
-        exchange_rate_data = ExchangeRateData(ExchangeRate, session)
+        exchange_rate_data = ExchangeRateData(session)
         new_exchange_rate = await exchange_rate_data.create(exchange_rate)
         return ExchangeRateSimpleSchema.model_validate(new_exchange_rate)
     except Exception as e:
@@ -77,7 +77,7 @@ async def exchange_rate_create(exchange_rate: ExchangeRateSmallSchema, session=D
 @router.delete('/delete/{id}/', status_code=status.HTTP_204_NO_CONTENT)
 async def exchange_rate_delete(id: int, session=Depends(get_session)):
     try:
-        exchange_rate_data = ExchangeRateData(ExchangeRate, session)
+        exchange_rate_data = ExchangeRateData(session)
         await exchange_rate_data.delete(id)
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
@@ -86,7 +86,7 @@ async def exchange_rate_delete(id: int, session=Depends(get_session)):
 @router.patch('/patch/{id}/', response_model=ExchangeRateSimpleSchema)
 async def exchange_rate_patch(id: int, exchange_rate: ExchangeRatePatchSchema, session=Depends(get_session)):
     try:
-        exchange_rate_data = ExchangeRateData(ExchangeRate, session)
+        exchange_rate_data = ExchangeRateData(session)
         model = await exchange_rate_data.update(id, exchange_rate)
         return ExchangeRateSimpleSchema.model_validate(model)
     except Exception as e:

@@ -54,7 +54,7 @@ async def get_users(
     - Несколько фильтров: ?is_active=true&filters[is_admin]=false
     """
     try:
-        user_model = UserData(User, session)
+        user_model = UserData(session)
         users, total = await user_model.get_multi(
             skip=pagination.offset,
             limit=pagination.limit,
@@ -77,7 +77,7 @@ async def get_users(
 @router.post('/', response_model=UserGetSchema, status_code=status.HTTP_201_CREATED)
 async def create_user(user: UserCreateSchema, session=Depends(get_session)):
     try:
-        user_model = UserData(User, session)
+        user_model = UserData(session)
         new_user = await user_model.create(user)
         return UserGetSchema.model_validate(new_user)
     except Exception as e:
@@ -87,7 +87,7 @@ async def create_user(user: UserCreateSchema, session=Depends(get_session)):
 @router.put('/change_password/', response_model=UserGetSchema)
 async def change_password_user(user: UserChangePasswordSchema, session=Depends(get_session)):
     try:
-        user_data = UserData(User, session)
+        user_data = UserData(session)
         model = await user_data.change_password(
             id=user.id, password=user.new_password, old_password=user.old_password)
         return UserGetSchema.model_validate(model)
@@ -96,9 +96,13 @@ async def change_password_user(user: UserChangePasswordSchema, session=Depends(g
 
 
 @router.put('/change_active/', response_model=UserGetSchema)
-async def change_active_user(user: UserChangeActionSchema, current_user: User = Depends(get_current_user), session=Depends(get_session)):
+async def change_active_user(
+            user: UserChangeActionSchema,
+            current_user: User = Depends(get_current_user),
+            session=Depends(get_session)
+        ):
     try:
-        user_data = UserData(User, session)
+        user_data = UserData(session)
         model = await user_data.change_state(id=user.id, is_active=user.is_active)
         return UserGetSchema.model_validate(model)
     except Exception as e:
@@ -108,7 +112,7 @@ async def change_active_user(user: UserChangeActionSchema, current_user: User = 
 @router.post('/login/', response_model=TokenSchema)
 async def login_user(login_schema: UserLoginSchema, request: Request, session=Depends(get_session)):
     try:
-        user = await UserData(User, session).authenticate(login_schema.username, login_schema.password)
+        user = await UserData(session).authenticate(login_schema.username, login_schema.password)
         if not user:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
         access_token = create_access_token(user)
@@ -118,7 +122,12 @@ async def login_user(login_schema: UserLoginSchema, request: Request, session=De
 
         client_ip = request.client.host if request.client else None
         user_agent = request.headers.get("user-agent")
-        db_refresh_token = RefreshToken(user_id=user.id, token=refresh_token, expires_at=expires_at, ip_address=client_ip, user_agent=user_agent)
+        db_refresh_token = RefreshToken(
+            user_id=user.id,
+            token=refresh_token,
+            expires_at=expires_at,
+            ip_address=client_ip,
+            user_agent=user_agent)
         session.add(db_refresh_token)
         await session.commit()
 
@@ -128,7 +137,7 @@ async def login_user(login_schema: UserLoginSchema, request: Request, session=De
 
 
 @router.post('/refresh/', response_model=TokenSchema)
-async def refresh_token(token:RefreshTokenSchema, request: Request, session=Depends(get_session)):
+async def refresh_token(token: RefreshTokenSchema, request: Request, session=Depends(get_session)):
     try:
         result = await session.execute(select(RefreshToken).where(RefreshToken.token == token.refresh_token))
         db_refresh_token = result.scalar_one_or_none()
@@ -137,13 +146,15 @@ async def refresh_token(token:RefreshTokenSchema, request: Request, session=Depe
         payload = decode_refresh_token(db_refresh_token.token)
         if not payload or payload.get("type") != "refresh":
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid refresh token payload")
-        user = await UserData(User, session).get_one(int(payload.get("id")))
+        user = await UserData(session).get_one(int(payload.get("id")))
         if not user:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User not found")
 
         query = delete(RefreshToken).where(RefreshToken.user_id == user.id)
         await session.execute(query)
-        query = delete(RefreshToken).where(RefreshToken.revoked == True, RefreshToken.expires_at < datetime.now(tz=None))
+        query = delete(RefreshToken).where(
+            RefreshToken.revoked == True,
+            RefreshToken.expires_at < datetime.now(tz=None))
         await session.execute(query)
 
         access_token = create_access_token(user)
@@ -153,11 +164,16 @@ async def refresh_token(token:RefreshTokenSchema, request: Request, session=Depe
         client_ip = request.client.host if request.client else None
         expires_at = datetime.fromtimestamp(payload["exp"]) if payload else None
         user_agent = request.headers.get("user-agent")
-        db_refresh_token = RefreshToken(user_id=user.id, token=refresh_token, expires_at=expires_at, ip_address=client_ip, user_agent=user_agent)
+        db_refresh_token = RefreshToken(
+            user_id=user.id,
+            token=refresh_token,
+            expires_at=expires_at,
+            ip_address=client_ip,
+            user_agent=user_agent)
         session.add(db_refresh_token)
         await session.commit()
 
         return TokenSchema(access_token=access_token, refresh_token=refresh_token)
-        
+
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

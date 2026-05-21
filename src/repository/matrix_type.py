@@ -6,7 +6,7 @@ from repository.base import BaseData
 
 
 class MatrixTypeData(BaseData):
-    def __init__(self, session: AsyncSession, model: MatrixType = MatrixType):
+    def __init__(self, session: AsyncSession):
         super().__init__(model=MatrixType, session=session)
 
     async def get_by_name(self, name: str):
