@@ -13,7 +13,10 @@ from model.os import OS
 from repository.os import OSData
 from repository.currency import CurrencyData
 from repository.shop import ShopData
+from model.tv import TV
 from repository.tv import TVData
+from repository.shop_link import ShopLinkData
+from model.shop_link import ShopLink
 
 
 async def file_upload_handle(
@@ -182,9 +185,30 @@ async def file_upload_handle(
                 if break_exit:
                     break
 
-                print(name, diagonal, refresh_rate, color, matrix_type, brand, screen_resolution, os)
                 tv = TVData(session).get_by_name(name)
-                
+                if not tv:
+                    tv_model = TV(
+                        name=name,
+                        description=description,
+                        diagonal=diagonal,
+                        refresh_rate=refresh_rate,
+                        color=color,
+                        matrix_type_id=matrix_type.id if matrix_type else None,
+                        brand_id=brand.id if brand else None,
+                        screen_resolution_id=screen_resolution.id if screen_resolution else None,
+                        os_id=os.id if os else None,
+                        )
+                    tv = TVData(session).create_by_model(tv_model)
+                shop_link = ShopLinkData(session).get_by_shop_tv(shop_id, tv.id)
+                if not shop_link:
+                    shop_link_model = ShopLink(
+                        shop_id=shop_id,
+                        tv_id=tv.id,
+                        link=link,
+                        is_active=True
+                    )
+                    shop_link = ShopLinkData(session).create_by_model(shop_link_model)
+
                 line_count += 1
     except Exception as e:
         print(e)
