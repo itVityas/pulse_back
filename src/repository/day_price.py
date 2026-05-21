@@ -1,3 +1,5 @@
+from typing import Optional, List
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -11,7 +13,7 @@ class DayPriceData(BaseData):
     def __init__(self, session: AsyncSession, model: DayPrice = DayPrice):
         super().__init__(model=DayPrice, session=session)
 
-    async def get_by_shop_date(self, shop_id: int, date):
+    async def get_by_shop_date(self, shop_id: int, date) -> Optional[List[DayPrice]]:
         slct = select(self.model).join(
                 self.model.shop_link
             ).options(

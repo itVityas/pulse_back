@@ -5,7 +5,6 @@ from fastapi import APIRouter, Depends, status, HTTPException, UploadFile, File
 from settings.database import get_session
 from schema.file_upload import FileUploadSchema
 from service.upload_file import file_upload_handle
-from model.day_price import DayPrice
 from repository.day_price import DayPriceData
 
 
@@ -20,7 +19,7 @@ async def file_upload(
     try:
         if not file.filename.endswith(('.xlsx', '.xls')):
             raise HTTPException(status_code=400, detail="Только файлы Excel (.xlsx, .xls) разрешены")
-        day_price = await DayPriceData(DayPrice, session).get_by_shop_date(
+        day_price = await DayPriceData(session).get_by_shop_date(
             parameters.shop_id,
             parameters.date)
         if len(day_price) > 0:

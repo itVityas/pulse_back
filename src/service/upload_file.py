@@ -3,8 +3,6 @@ from datetime import date as idate
 from sqlalchemy.ext.asyncio import AsyncSession
 from openpyxl import load_workbook
 
-from model.category import Category
-from repository.category import CategoryData
 from model.matrix_type import MatrixType
 from repository.matrix_type import MatrixTypeData
 from model.brand import Brand
@@ -22,11 +20,9 @@ async def file_upload_handle(
         wb = load_workbook(file)
         for sheet in wb.worksheets:
             title = sheet.title.lower()
-            category: Category = None
+            category: str = None
             if title.find('not') != -1 or title.find('не') != -1:
-                category = await CategoryData(Category, session).get_by_name('Не смарт')
-            else:
-                category = await CategoryData(Category, session).get_by_name('Смарт')
+                category = 'Без Smart TV'
 
             line_count = 0
             title_dict = {}

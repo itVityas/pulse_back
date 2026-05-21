@@ -1,7 +1,6 @@
 from .currency import Currency
 from .day_price import DayPrice
 from .brand import Brand
-from .category import Category
 from .exchange_rate import ExchangeRate
 from .matrix_type import MatrixType
 from .os import OS
@@ -12,4 +11,17 @@ from .shop import Shop
 from .tv import TV
 from .user import User
 
-__all__ = ["Currency", "DayPrice", "Brand", "Category", "ExchangeRate", "MatrixType", "OS", "RefreshToken", "ScreenResolution", "ShopLink", "Shop", "TV", "User"]
+__all__ = [
+        "Currency",
+        "DayPrice",
+        "Brand",
+        "ExchangeRate",
+        "MatrixType",
+        "OS",
+        "RefreshToken",
+        "ScreenResolution",
+        "ShopLink",
+        "Shop",
+        "TV",
+        "User"
+    ]

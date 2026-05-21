@@ -1,8 +1,8 @@
 """init
 
-Revision ID: be1e0cb15344
+Revision ID: 31487095b729
 Revises:
-Create Date: 2026-05-15 11:08:32.170518
+Create Date: 2026-05-21 07:43:25.449725
 
 """
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = "be1e0cb15344"
+revision: str = "31487095b729"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -29,14 +29,6 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(op.f("ix_brand_id"), "brand", ["id"], unique=False)
-    op.create_table(
-        "category",
-        sa.Column("name", sa.String(length=100), nullable=False),
-        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
-        sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("name"),
-    )
-    op.create_index(op.f("ix_category_id"), "category", ["id"], unique=False)
     op.create_table(
         "currency",
         sa.Column("name", sa.String(length=3), nullable=False),
@@ -143,18 +135,14 @@ def upgrade() -> None:
         sa.Column("screen_resolution_id", sa.Integer(), nullable=True),
         sa.Column("brand_id", sa.Integer(), nullable=True),
         sa.Column("matrix_type_id", sa.Integer(), nullable=True),
-        sa.Column("category_id", sa.Integer(), nullable=True),
         sa.Column("color", sa.String(length=20), nullable=True),
         sa.Column("description", sa.Text(), nullable=True),
         sa.Column("refresh_rate", sa.Integer(), nullable=True),
+        sa.Column("diagonal", sa.Integer(), nullable=True),
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.ForeignKeyConstraint(
             ["brand_id"],
             ["brand.id"],
-        ),
-        sa.ForeignKeyConstraint(
-            ["category_id"],
-            ["category.id"],
         ),
         sa.ForeignKeyConstraint(
             ["matrix_type_id"],
@@ -241,8 +229,6 @@ def downgrade() -> None:
     op.drop_table("matrix_type")
     op.drop_index(op.f("ix_currency_id"), table_name="currency")
     op.drop_table("currency")
-    op.drop_index(op.f("ix_category_id"), table_name="category")
-    op.drop_table("category")
     op.drop_index(op.f("ix_brand_id"), table_name="brand")
     op.drop_table("brand")
     # ### end Alembic commands ###

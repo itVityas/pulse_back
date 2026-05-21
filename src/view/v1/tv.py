@@ -40,7 +40,6 @@ async def tv_list(pagination: TVFilterSchema = Depends(), session=Depends(get_se
     - Фильтр по id разрешения экрана: ?screen_resolution_id=1
     - Фильтр по id бренда: ?brand_id=1
     - Фильтр по id типа матрицы: ?matrix_type_id=1
-    - Фильтр по id категории: ?category_id=1
     - Фильтр по цвету: ?color=black
     - Фильтр по частоте обновления: ?refresh_rate=60
     - Фильтр по диагонали: ?diagonal=32
@@ -57,8 +56,7 @@ async def tv_list(pagination: TVFilterSchema = Depends(), session=Depends(get_se
                 'os',
                 'screen_resolution',
                 'brand',
-                'matrix_type',
-                'category',]
+                'matrix_type',]
         )
         tv_schemes = [TVFullResponceSchema.model_validate(item) for item in tv_list]
         pages = pagination.get_count_pages(total)

@@ -7,7 +7,6 @@ from .os import OSFullSchema
 from .screen_resolution import ScreenResolutionFullSchema
 from .brand import BrandFullSchema
 from .matrix_type import MatrixTypeFullSchema
-from .category import CategoryFullSchema
 
 
 class TVUpdateSchema(BaseModel):
@@ -16,7 +15,6 @@ class TVUpdateSchema(BaseModel):
     screen_resolution_id: Optional[int] = None
     brand_id: Optional[int] = None
     matrix_type_id: Optional[int] = None
-    category_id: Optional[int] = None
     color: Optional[str] = None
     description: Optional[str] = None
     refresh_rate: Optional[int] = None
@@ -32,7 +30,6 @@ class TVPOSTSchema(BaseModel):
     screen_resolution_id: Optional[int] = None
     brand_id: Optional[int] = None
     matrix_type_id: Optional[int] = None
-    category_id: Optional[int] = None
     color: Optional[str] = None
     description: Optional[str] = None
     refresh_rate: Optional[int] = None
@@ -49,7 +46,6 @@ class TVSmallResponseSchema(BaseModel):
     screen_resolution_id: Optional[int] = None
     brand_id: Optional[int] = None
     matrix_type_id: Optional[int] = None
-    category_id: Optional[int] = None
     color: Optional[str] = None
     description: Optional[str] = None
     refresh_rate: Optional[int] = None
@@ -70,7 +66,6 @@ class TVFilterSchema(PaginationSortParamsSchema):
     screen_resolution_id: Optional[int] = None
     brand_id: Optional[int] = None
     matrix_type_id: Optional[int] = None
-    category_id: Optional[int] = None
     color: Optional[str] = None
     refresh_rate: Optional[int] = None
     diagonal: Optional[int] = None
@@ -83,7 +78,6 @@ class TVFullResponceSchema(BaseModel):
     screen_resolution: Optional[ScreenResolutionFullSchema] = None
     brand: Optional[BrandFullSchema] = None
     matrix_type: Optional[MatrixTypeFullSchema] = None
-    category: Optional[CategoryFullSchema] = None
     color: Optional[str] = None
     description: Optional[str] = None
     refresh_rate: Optional[int] = None

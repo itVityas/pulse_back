@@ -19,8 +19,6 @@ class TV(BaseModelOnlyId):
     brand = relationship('Brand', back_populates='tv_brand')
     matrix_type_id: Mapped[int] = mapped_column(ForeignKey('matrix_type.id'), nullable=True)
     matrix_type = relationship('MatrixType', back_populates='tv_matrix_type')
-    category_id: Mapped[int] = mapped_column(ForeignKey('category.id'), nullable=True)
-    category = relationship('Category', back_populates='tv_category')
     color: Mapped[str] = mapped_column(String(20), nullable=True)
     description: Mapped[str] = mapped_column(Text, nullable=True)
     refresh_rate: Mapped[int] = mapped_column(nullable=True)
