@@ -11,12 +11,19 @@ from model.screen_resolution import ScreenResolution
 from repository.screen_resolution import ScreenResolutionData
 from model.os import OS
 from repository.os import OSData
+from repository.currency import CurrencyData
+from repository.shop import ShopData
+from repository.tv import TVData
 
 
 async def file_upload_handle(
         file, currency_id: int, shop_id: int,
         date: idate, session: AsyncSession):
     try:
+        currency = CurrencyData(session).get_one(currency_id)
+        shop = ShopData(session).get_one(shop_id)
+        if not currency or not shop:
+            raise Exception('shop or currency not exist')
         wb = load_workbook(file)
         for sheet in wb.worksheets:
             title = sheet.title.lower()
@@ -105,19 +112,19 @@ async def file_upload_handle(
                             break
                         matrix_type_buf = str(cell).lower()
                         if matrix_type_buf.find('TN') != -1:
-                            matrix_type = await MatrixTypeData(MatrixType, session).get_by_name('TN')
+                            matrix_type = await MatrixTypeData(session).get_by_name('TN')
                         elif matrix_type_buf.find('ips') != -1:
-                            matrix_type = await MatrixTypeData(MatrixType, session).get_by_name('IPS')
+                            matrix_type = await MatrixTypeData(session).get_by_name('IPS')
                         elif matrix_type_buf.find('va') != -1:
-                            matrix_type = await MatrixTypeData(MatrixType, session).get_by_name('VA')
+                            matrix_type = await MatrixTypeData(session).get_by_name('VA')
                         elif matrix_type_buf.find('qled') != -1:
-                            matrix_type = await MatrixTypeData(MatrixType, session).get_by_name('QLED')
+                            matrix_type = await MatrixTypeData(session).get_by_name('QLED')
                         elif matrix_type_buf.find('dled') != -1 or matrix_type_buf.find('dual led') != -1:
-                            matrix_type = await MatrixTypeData(MatrixType, session).get_by_name('DLED')
+                            matrix_type = await MatrixTypeData(session).get_by_name('DLED')
                         elif matrix_type_buf.find('oled') != -1:
-                            matrix_type = await MatrixTypeData(MatrixType, session).get_by_name('OLED')
+                            matrix_type = await MatrixTypeData(session).get_by_name('OLED')
                         elif matrix_type_buf('led') != -1:
-                            matrix_type = await MatrixTypeData(MatrixType, session).get_by_name('LED')
+                            matrix_type = await MatrixTypeData(session).get_by_name('LED')
                         continue
                     if indx == title_dict.get('brand'):
                         if cell is None:
@@ -129,52 +136,55 @@ async def file_upload_handle(
                         if brand_buf.find('телевизор') != -1:
                             brand = None
                             continue
-                        brand = await BrandData(Brand, session).get_by_name(brand_buf)
+                        brand = await BrandData(session).get_by_name(brand_buf)
                         continue
                     if indx == title_dict.get('screen_resolution'):
                         if cell is None:
                             break
                         screen_resolution_buf = str(cell).lower().replace(' ', '')
                         if screen_resolution_buf.find('fhd') != -1 or screen_resolution_buf.find('fullhd'):
-                            screen_resolution = await ScreenResolutionData(ScreenResolution, session).get_by_name('Full HD')
+                            screen_resolution = await ScreenResolutionData(session).get_by_name('Full HD')
                         elif screen_resolution_buf.find('4k') != -1:
-                            screen_resolution = await ScreenResolutionData(ScreenResolution, session).get_by_name('4K')
+                            screen_resolution = await ScreenResolutionData(session).get_by_name('4K')
                         elif screen_resolution_buf.find('2k') != -1:
-                            screen_resolution = await ScreenResolutionData(ScreenResolution, session).get_by_name('2K')
+                            screen_resolution = await ScreenResolutionData(session).get_by_name('2K')
                         elif screen_resolution_buf.find('hd') != -1:
-                            screen_resolution = await ScreenResolutionData(ScreenResolution, session).get_by_name('HD')
+                            screen_resolution = await ScreenResolutionData(session).get_by_name('HD')
                         elif screen_resolution_buf.find('5k') != -1:
-                            screen_resolution = await ScreenResolutionData(ScreenResolution, session).get_by_name('5K')
+                            screen_resolution = await ScreenResolutionData(session).get_by_name('5K')
                         elif screen_resolution_buf.find('8k') != -1:
-                            screen_resolution = await ScreenResolutionData(ScreenResolution, session).get_by_name('8K')
+                            screen_resolution = await ScreenResolutionData(session).get_by_name('8K')
                         continue
                     if indx == title_dict.get('os'):
                         if cell is None:
                             break
                         os_buf = str(cell).lower()
                         if os_buf.find('webos') != -1 or os_buf.find('web os') != -1:
-                            os = await OSData(OS, session).get_by_name('Web OS')
+                            os = await OSData(session).get_by_name('Web OS')
                         elif os_buf.find('tizen') != -1:
-                            os = await OSData(OS, session).get_by_name('Tizen OS')
+                            os = await OSData(session).get_by_name('Tizen OS')
                         elif os_buf.find('android') != -1:
-                            os = await OSData(OS, session).get_by_name('Android TV')
+                            os = await OSData(session).get_by_name('Android TV')
                         elif os_buf.find('google') != -1:
-                            os = await OSData(OS, session).get_by_name('Google TV')
+                            os = await OSData(session).get_by_name('Google TV')
                         elif os_buf.find('yaos') != -1 or os_buf.find('яндекс') != -1:
-                            os = await OSData(OS, session).get_by_name('YaOS')
+                            os = await OSData(session).get_by_name('YaOS')
                         elif os_buf.find('салют') != -1:
-                            os = await OSData(OS, session).get_by_name('Салют')
+                            os = await OSData(session).get_by_name('Салют')
                         elif os_buf.find('wildred') != -1:
-                            os = await OSData(OS, session).get_by_name('WildRed')
+                            os = await OSData(session).get_by_name('WildRed')
                         elif os_buf.find('vidaa') != -1:
-                            os = await OSData(OS, session).get_by_name('VIDAA')
+                            os = await OSData(session).get_by_name('VIDAA')
                         elif os_buf.find('без') != -1 or category == 'Без Smart TV':
-                            os = await OSData(OS, session).get_by_name('Без Smart TV')
+                            os = await OSData(session).get_by_name('Без Smart TV')
                         continue
 
                 if break_exit:
                     break
+
                 print(name, diagonal, refresh_rate, color, matrix_type, brand, screen_resolution, os)
+                tv = TVData(session).get_by_name(name)
+                
                 line_count += 1
     except Exception as e:
         print(e)
