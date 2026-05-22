@@ -13,6 +13,6 @@ class ShopLinkData(BaseData):
         stmt = select(ShopLink).where(
             ShopLink.shop_id == shop_id,
             ShopLink.tv_id == tv_id,
-            is_active == True)
+            ShopLink.is_active == True)
         result = await self.session.execute(stmt)
         return result.scalars().first()

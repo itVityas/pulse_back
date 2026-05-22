@@ -17,14 +17,16 @@ from model.tv import TV
 from repository.tv import TVData
 from repository.shop_link import ShopLinkData
 from model.shop_link import ShopLink
+from model.day_price import DayPrice
+from repository.day_price import DayPriceData
 
 
 async def file_upload_handle(
         file, currency_id: int, shop_id: int,
         date: idate, session: AsyncSession):
     try:
-        currency = CurrencyData(session).get_one(currency_id)
-        shop = ShopData(session).get_one(shop_id)
+        currency = await CurrencyData(session).get_one(currency_id)
+        shop = await ShopData(session).get_one(shop_id)
         if not currency or not shop:
             raise Exception('shop or currency not exist')
         wb = load_workbook(file)
@@ -66,6 +68,15 @@ async def file_upload_handle(
                         if column.find('оперативная система') != -1:
                             title_dict['os'] = indx
                             continue
+                        if column.find('цена до скидки') != -1 or column.find('цена со скидкой') != -1:
+                            title_dict['full_price'] = indx
+                            continue
+                        if column.find('цена по карте') != -1 or column.find('цена с картой') != -1:
+                            title_dict['card_price'] = indx
+                            continue
+                        if column.find('цена') != -1:
+                            title_dict['price'] = indx
+                            continue
                     line_count += 1
                     continue
                 break_exit = False
@@ -80,6 +91,9 @@ async def file_upload_handle(
                 brand: Brand = None
                 screen_resolution: ScreenResolution = None
                 os: OS = None
+                full_price = 0
+                card_price = 0
+                price = 0
                 for indx, cell in enumerate(row):
                     if indx == 0 and cell is None:
                         break_exit = True
@@ -181,25 +195,45 @@ async def file_upload_handle(
                         elif os_buf.find('без') != -1 or category == 'Без Smart TV':
                             os = await OSData(session).get_by_name('Без Smart TV')
                         continue
+                    if indx == title_dict.get('full_price'):
+                        try:
+                            full_price = int(str(cell).replace(' ', ''))
+                        except Exception:
+                            print('full_price:', cell)
+                        continue
+                    if indx == title_dict.get('card_price'):
+                        try:
+                            card_price = int(str(cell).replace(' ', ''))
+                        except Exception:
+                            print('card_price:', cell)
+                        continue
+                    if indx == title_dict.get('price'):
+                        try:
+                            price = int(str(cell).replace(' ', ''))
+                        except Exception:
+                            print('price:', cell)
+                        continue
 
                 if break_exit:
                     break
 
-                tv = TVData(session).get_by_name(name)
+                tv = await TVData(session).get_by_name(name)
                 if not tv:
                     tv_model = TV(
-                        name=name,
+                        name=name[:100],
                         description=description,
                         diagonal=diagonal,
                         refresh_rate=refresh_rate,
-                        color=color,
+                        color=color[:20],
                         matrix_type_id=matrix_type.id if matrix_type else None,
                         brand_id=brand.id if brand else None,
                         screen_resolution_id=screen_resolution.id if screen_resolution else None,
                         os_id=os.id if os else None,
                         )
-                    tv = TVData(session).create_by_model(tv_model)
-                shop_link = ShopLinkData(session).get_by_shop_tv(shop_id, tv.id)
+                    tv = await TVData(session).create_by_model(tv_model)
+
+                shop_link = await ShopLinkData(session).get_by_shop_tv(shop_id, tv.id)
+
                 if not shop_link:
                     shop_link_model = ShopLink(
                         shop_id=shop_id,
@@ -207,7 +241,17 @@ async def file_upload_handle(
                         link=link,
                         is_active=True
                     )
-                    shop_link = ShopLinkData(session).create_by_model(shop_link_model)
+                    shop_link = await ShopLinkData(session).create_by_model(shop_link_model)
+
+                day_price_model = DayPrice(
+                        shop_link_id=shop_link.id,
+                        price=full_price,
+                        card_price=card_price,
+                        discount_price=price,
+                        currency_id=currency_id,
+                        date=date
+                    )
+                await DayPriceData(session).create_by_model(day_price_model)
 
                 line_count += 1
     except Exception as e:
