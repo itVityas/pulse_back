@@ -2,6 +2,10 @@ from fastapi import APIRouter, status, Depends, HTTPException
 
 from settings.database import get_session
 from repository.shop import ShopData
+from repository.brand import BrandData
+from repository.os import OSData
+from repository.screen_resolution import ScreenResolutionData
+from repository.matrix_type import MatrixTypeData
 
 
 router = APIRouter(prefix='/filters', tags=['Filters'],)
@@ -20,6 +24,67 @@ async def get_main_filters(session=Depends(get_session)):
                 'values': buf_shops,
                 'type': 'checkbox'
             }
+
+        brands_obj, _ = await BrandData(session).get_multi(limit=-1)
+        buf_brands = [{'id': brand.id, 'name': brand.name} for brand in brands_obj]
+        rez_dict['brands'] = {
+                'title': 'Бренды',
+                'search_name': 'brands',
+                'values': buf_brands,
+                'type': 'checkbox'
+            }
+
+        os_obj, _ = await OSData(session).get_multi(limit=-1)
+        buf_os = [{'id': os.id, 'name': os.name} for os in os_obj]
+        rez_dict['os'] = {
+                'title': 'Операционные системы',
+                'search_name': 'os',
+                'values': buf_os,
+                'type': 'checkbox'
+            }
+
+        screen_resolutions_obj, _ = await ScreenResolutionData(session).get_multi(limit=-1)
+        buf_screen_resolutions = [
+            {'id': screen_resolution.id,
+             'name': screen_resolution.name} for screen_resolution in screen_resolutions_obj]
+        rez_dict['screen_resolutions'] = {
+                'title': 'Разрешения экрана',
+                'search_name': 'screen_resolutions',
+                'values': buf_screen_resolutions,
+                'type': 'radiobutton'
+            }
+
+        matrix_types_obj, _ = await MatrixTypeData(session).get_multi(limit=-1)
+        buf_matrix_types = [
+            {'id': matrix_type.id,
+             'name': matrix_type.name} for matrix_type in matrix_types_obj]
+        rez_dict['matrix_types'] = {
+                'title': 'Типы матриц',
+                'search_name': 'matrix_types',
+                'values': buf_matrix_types,
+                'type': 'checkbox'
+            }
+
+        rez_dict['refresh_rate'] = {
+            'title': 'Частота обновления',
+            'search_name': 'refresh_rate',
+            'values': [50, 60, 120, 144],
+            'type': 'radiobutton'
+        }
+
+        rez_dict['min_diagonal'] = {
+            'title': 'Минимальная иагональ',
+            'search_name': 'min_diagonal',
+            'values': [24],
+            'type': 'min_range'
+        }
+
+        rez_dict['max_diagonal'] = {
+            'title': 'Максимальная диагональ',
+            'search_name': 'max_diagonal',
+            'values': [110],
+            'type': 'max_range'
+        }
 
         return rez_dict
     except Exception as ex:
