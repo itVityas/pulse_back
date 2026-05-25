@@ -54,6 +54,7 @@ class ProjectConfig:
         self.project_version = '0.0.1'
         self.debug = True if 'True' == os.getenv('DEBUG', False) else False
         self.backend_cors_origins: List[str] = [
+            "http://0.0.0.0:3000",
             "http://localhost:3000",
             "http://localhost:8000",
         ]
