@@ -10,8 +10,6 @@ app = FastAPI(
     title=project_config.project_name,
     version=project_config.project_version,
 )
-app.include_router(prefix='/v1', router=v1_router)
-
 
 app.add_middleware(
     CORSMiddleware,
@@ -21,6 +19,8 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["*"],
 )
+
+app.include_router(prefix='/v1', router=v1_router)
 
 
 if __name__ == "__main__":
