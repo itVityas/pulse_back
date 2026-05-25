@@ -10,3 +10,6 @@ class Currency(BaseModelOnlyId):
     __tablename__ = "currency"
     name: Mapped[str] = mapped_column(String(3), nullable=False, unique=True)
     currency_shop_link = relationship('DayPrice', back_populates='currency')
+
+    def __str__(self):
+        return f'<Currency>: {self.id} {self.name}'

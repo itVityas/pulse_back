@@ -7,10 +7,13 @@ from schema.exchange_rate import (
     ExchangeRateParamsSchema,
     ExchangeRateSmallSchema,
     ExchangeRateSimpleSchema,
-    ExchangeRatePatchSchema,)
+    ExchangeRatePatchSchema,
+    UploadCurrencySchema,
+)
 from schema.pagination import PaginationResponseSchema
 from repository.exchange_rate import ExchangeRateData
 from settings.database import get_session
+from service.currency_upload import get_currency_from_nbrb
 
 
 router = APIRouter(prefix='/exchange_rate', tags=['ExchangeRate'])
@@ -89,5 +92,17 @@ async def exchange_rate_patch(id: int, exchange_rate: ExchangeRatePatchSchema, s
         exchange_rate_data = ExchangeRateData(session)
         model = await exchange_rate_data.update(id, exchange_rate)
         return ExchangeRateSimpleSchema.model_validate(model)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.post('/upload/', status_code=status.HTTP_201_CREATED)
+async def currency_upload(upload_data: UploadCurrencySchema, session=Depends(get_session)):
+    """upload currency from nbrb
+    date: date witch upload
+    """
+    try:
+        await get_currency_from_nbrb(session, upload_data.date)
+        return {'status': 'created'}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

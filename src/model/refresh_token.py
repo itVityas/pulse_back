@@ -16,3 +16,6 @@ class RefreshToken(BaseModelOnlyId):
     user_agent: Mapped[str] = mapped_column(String(500), nullable=True)
     ip_address: Mapped[str] = mapped_column(String(50), nullable=True)
     user_id: Mapped[id] = mapped_column(ForeignKey('users.id', ondelete="CASCADE"), nullable=False)
+
+    def __str__(self):
+        return f'<Currency>: {self.id}'

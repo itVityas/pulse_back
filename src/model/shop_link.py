@@ -15,3 +15,6 @@ class ShopLink(BaseModel):
     link: Mapped[str] = mapped_column(String(250), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean(), insert_default=True)
     price_shop_link = relationship("DayPrice", back_populates='shop_link', cascade='all, delete-orphan')
+
+    def __str__(self):
+        return f'<Currency>: {self.id}'

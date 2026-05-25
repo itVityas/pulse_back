@@ -18,3 +18,6 @@ class DayPrice(BaseModelOnlyId):
     discount_price: Mapped[float] = mapped_column(nullable=True)
     card_price: Mapped[float] = mapped_column(nullable=True)
     date: Mapped[idate] = mapped_column(insert_default=func.now(), nullable=False)
+
+    def __str__(self):
+        return f'<Currency>: {self.id}'
