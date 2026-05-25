@@ -122,7 +122,8 @@ class BaseData:
         else:
             query = query.order_by(self.model.id.asc())
 
-        query = query.offset(skip).limit(limit)
+        if limit != -1:
+            query = query.offset(skip).limit(limit)
         result = await self.session.execute(query)
 
         return result.scalars().all(), total
