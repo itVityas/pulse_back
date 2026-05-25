@@ -102,7 +102,7 @@ async def currency_upload(upload_data: UploadCurrencySchema, session=Depends(get
     date: date witch upload
     """
     try:
-        await get_currency_from_nbrb(session, upload_data.date)
-        return {'status': 'created'}
+        count = await get_currency_from_nbrb(session, upload_data.date)
+        return {'status': 'created', 'count': count}
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
