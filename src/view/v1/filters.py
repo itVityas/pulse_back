@@ -73,7 +73,7 @@ async def get_main_filters(session=Depends(get_session)):
         })
 
         rez_dict.append({
-            'title': 'Минимальная иагональ',
+            'title': 'Минимальная диагональ',
             'search_name': 'min_diagonal',
             'values': [24],
             'type': 'min_range'
