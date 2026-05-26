@@ -14,77 +14,77 @@ router = APIRouter(prefix='/filters', tags=['Filters'],)
 @router.get('/main/', status_code=status.HTTP_200_OK)
 async def get_main_filters(session=Depends(get_session)):
     try:
-        rez_dict = {}
+        rez_dict = []
 
         shops_obj, _ = await ShopData(session).get_multi(limit=-1)
         buf_shops = [{'id': shop.id, 'name': shop.name} for shop in shops_obj]
-        rez_dict['shops'] = {
+        rez_dict.append({
                 'title': 'Магазины',
                 'search_name': 'shops',
                 'values': buf_shops,
                 'type': 'checkbox'
-            }
+            })
 
         brands_obj, _ = await BrandData(session).get_multi(limit=-1)
         buf_brands = [{'id': brand.id, 'name': brand.name} for brand in brands_obj]
-        rez_dict['brands'] = {
+        rez_dict.append({
                 'title': 'Бренды',
                 'search_name': 'brands',
                 'values': buf_brands,
                 'type': 'checkbox'
-            }
+            })
 
         os_obj, _ = await OSData(session).get_multi(limit=-1)
         buf_os = [{'id': os.id, 'name': os.name} for os in os_obj]
-        rez_dict['os'] = {
+        rez_dict.append({
                 'title': 'Операционные системы',
                 'search_name': 'os',
                 'values': buf_os,
                 'type': 'checkbox'
-            }
+            })
 
         screen_resolutions_obj, _ = await ScreenResolutionData(session).get_multi(limit=-1)
         buf_screen_resolutions = [
             {'id': screen_resolution.id,
              'name': screen_resolution.name} for screen_resolution in screen_resolutions_obj]
-        rez_dict['screen_resolutions'] = {
+        rez_dict.append({
                 'title': 'Разрешения экрана',
                 'search_name': 'screen_resolutions',
                 'values': buf_screen_resolutions,
                 'type': 'radiobutton'
-            }
+            })
 
         matrix_types_obj, _ = await MatrixTypeData(session).get_multi(limit=-1)
         buf_matrix_types = [
             {'id': matrix_type.id,
              'name': matrix_type.name} for matrix_type in matrix_types_obj]
-        rez_dict['matrix_types'] = {
+        rez_dict.append({
                 'title': 'Типы матриц',
                 'search_name': 'matrix_types',
                 'values': buf_matrix_types,
                 'type': 'checkbox'
-            }
+            })
 
-        rez_dict['refresh_rate'] = {
+        rez_dict.append({
             'title': 'Частота обновления',
             'search_name': 'refresh_rate',
             'values': [50, 60, 120, 144],
             'type': 'radiobutton'
-        }
+        })
 
-        rez_dict['min_diagonal'] = {
+        rez_dict.append({
             'title': 'Минимальная иагональ',
             'search_name': 'min_diagonal',
             'values': [24],
             'type': 'min_range'
-        }
+        })
 
-        rez_dict['max_diagonal'] = {
+        rez_dict.append({
             'title': 'Максимальная диагональ',
             'search_name': 'max_diagonal',
             'values': [110],
             'type': 'max_range'
-        }
+        })
 
         return rez_dict
     except Exception as ex:
