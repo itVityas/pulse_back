@@ -1,4 +1,5 @@
 from datetime import date as idate
+import re
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from openpyxl import load_workbook
@@ -110,7 +111,10 @@ async def file_upload_handle(
                     if indx == title_dict.get('diagonal'):
                         if cell is None:
                             break
-                        cell_str = str(cell).lower().replace(' ', '').replace('дюйма', '')
+                        cell_str = str(cell)
+                        cell_str = re.sub(r'\d+см;', '', cell_str)
+                        cell_str = re.sub(r'\d+см', '', cell_str)
+                        cell_str = cell_str.lower().replace(' ', '').replace('дюйм', '"').replace('″', '"').replace('\'', '"').replace(';', '"').replace('’', '"').replace('(', '"').replace('”', '"')
                         try:
                             diagonal = int(float(cell_str.split('"')[0]))
                         except Exception as ex:
@@ -197,19 +201,19 @@ async def file_upload_handle(
                         continue
                     if indx == title_dict.get('full_price'):
                         try:
-                            full_price = int(str(cell).replace(' ', ''))
+                            full_price = float(str(cell).replace(' ', ''))
                         except Exception:
                             print('full_price:', cell)
                         continue
                     if indx == title_dict.get('card_price'):
                         try:
-                            card_price = int(str(cell).replace(' ', ''))
+                            card_price = float(str(cell).replace(' ', ''))
                         except Exception:
                             print('card_price:', cell)
                         continue
                     if indx == title_dict.get('price'):
                         try:
-                            price = int(str(cell).replace(' ', ''))
+                            price = float(str(cell).replace(' ', ''))
                         except Exception:
                             print('price:', cell)
                         continue
@@ -217,10 +221,13 @@ async def file_upload_handle(
                 if break_exit:
                     break
 
+                if price == 0 and card_price == 0 and full_price == 0:
+                    line_count += 1
+                    continue
                 tv = await TVData(session).get_by_name(name)
                 if not tv:
                     tv_model = TV(
-                        name=name[:100],
+                        name=name[:250],
                         description=description,
                         diagonal=diagonal,
                         refresh_rate=refresh_rate,
