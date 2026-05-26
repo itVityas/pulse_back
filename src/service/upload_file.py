@@ -111,10 +111,10 @@ async def file_upload_handle(
                     if indx == title_dict.get('diagonal'):
                         if cell is None:
                             break
-                        cell_str = str(cell)
+                        cell_str = str(cell).lower()
                         cell_str = re.sub(r'\d+см;', '', cell_str)
                         cell_str = re.sub(r'\d+см', '', cell_str)
-                        cell_str = cell_str.lower().replace(' ', '').replace('дюйм', '"').replace('″', '"').replace('\'', '"').replace(';', '"').replace('’', '"').replace('(', '"').replace('”', '"')
+                        cell_str = cell_str.replace(' ', '').replace('дюйм', '"').replace('″', '"').replace('\'', '"').replace(';', '"').replace('’', '"').replace('(', '"').replace('”', '"')
                         try:
                             diagonal = int(float(cell_str.split('"')[0]))
                         except Exception as ex:
@@ -123,7 +123,10 @@ async def file_upload_handle(
                     if indx == title_dict.get('refresh_rate'):
                         if cell is None:
                             break
-                        refresh_rate = int(str(cell).lower().replace('hz', '').replace('гц', '').replace(' ', ''))
+                        try:
+                            refresh_rate = int(str(cell).lower().replace('hz', '').replace('гц', '').replace(' ', ''))
+                        except Exception:
+                            print('refresh_rate:', str(cell))
                         continue
                     if indx == title_dict.get('color'):
                         color = str(cell)
@@ -231,7 +234,7 @@ async def file_upload_handle(
                         description=description,
                         diagonal=diagonal,
                         refresh_rate=refresh_rate,
-                        color=color[:20],
+                        color=color[:20] if color else None,
                         matrix_type_id=matrix_type.id if matrix_type else None,
                         brand_id=brand.id if brand else None,
                         screen_resolution_id=screen_resolution.id if screen_resolution else None,

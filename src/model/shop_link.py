@@ -1,4 +1,4 @@
-from sqlalchemy import String, ForeignKey, Boolean
+from sqlalchemy import ForeignKey, Boolean, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import BaseModel
@@ -12,7 +12,7 @@ class ShopLink(BaseModel):
     shop = relationship('Shop', back_populates='shop_shop_link')
     tv_id: Mapped[int] = mapped_column(ForeignKey('tv.id'), nullable=False)
     tv = relationship('TV', back_populates='tv_shop_link')
-    link: Mapped[str] = mapped_column(String(250), nullable=False)
+    link: Mapped[str] = mapped_column(Text(), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean(), insert_default=True)
     price_shop_link = relationship("DayPrice", back_populates='shop_link', cascade='all, delete-orphan')
 
