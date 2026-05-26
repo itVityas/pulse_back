@@ -17,7 +17,7 @@ async def get_main_filters(session=Depends(get_session)):
         rez_dict = []
 
         shops_obj, _ = await ShopData(session).get_multi(limit=-1)
-        buf_shops = [{'id': shop.id, 'name': shop.name} for shop in shops_obj]
+        buf_shops = [shop.name for shop in shops_obj]
         rez_dict.append({
                 'title': 'Магазины',
                 'search_name': 'shops',
@@ -26,7 +26,7 @@ async def get_main_filters(session=Depends(get_session)):
             })
 
         brands_obj, _ = await BrandData(session).get_multi(limit=-1)
-        buf_brands = [{'id': brand.id, 'name': brand.name} for brand in brands_obj]
+        buf_brands = [brand.name for brand in brands_obj]
         rez_dict.append({
                 'title': 'Бренды',
                 'search_name': 'brands',
@@ -35,7 +35,7 @@ async def get_main_filters(session=Depends(get_session)):
             })
 
         os_obj, _ = await OSData(session).get_multi(limit=-1)
-        buf_os = [{'id': os.id, 'name': os.name} for os in os_obj]
+        buf_os = [os.name for os in os_obj]
         rez_dict.append({
                 'title': 'Операционные системы',
                 'search_name': 'os',
@@ -44,9 +44,7 @@ async def get_main_filters(session=Depends(get_session)):
             })
 
         screen_resolutions_obj, _ = await ScreenResolutionData(session).get_multi(limit=-1)
-        buf_screen_resolutions = [
-            {'id': screen_resolution.id,
-             'name': screen_resolution.name} for screen_resolution in screen_resolutions_obj]
+        buf_screen_resolutions = [screen_resolution.name for screen_resolution in screen_resolutions_obj]
         rez_dict.append({
                 'title': 'Разрешения экрана',
                 'search_name': 'screen_resolutions',
@@ -55,9 +53,7 @@ async def get_main_filters(session=Depends(get_session)):
             })
 
         matrix_types_obj, _ = await MatrixTypeData(session).get_multi(limit=-1)
-        buf_matrix_types = [
-            {'id': matrix_type.id,
-             'name': matrix_type.name} for matrix_type in matrix_types_obj]
+        buf_matrix_types = [matrix_type.name for matrix_type in matrix_types_obj]
         rez_dict.append({
                 'title': 'Типы матриц',
                 'search_name': 'matrix_types',
