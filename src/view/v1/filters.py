@@ -6,6 +6,7 @@ from repository.brand import BrandData
 from repository.os import OSData
 from repository.screen_resolution import ScreenResolutionData
 from repository.matrix_type import MatrixTypeData
+from repository.currency import CurrencyData
 
 
 router = APIRouter(prefix='/filters', tags=['Filters'],)
@@ -81,6 +82,15 @@ async def get_main_filters(session=Depends(get_session)):
             'values': [110],
             'type': 'max_range'
         })
+
+        currency_obj, _ = await CurrencyData(session).get_multi(limit=-1)
+        buf_currency = [currency.name for currency in currency_obj]
+        rez_dict.append({
+                'title': 'Валюта',
+                'search_name': 'currency',
+                'values': buf_currency,
+                'type': 'radiobutton'
+            })
 
         return rez_dict
     except Exception as ex:
