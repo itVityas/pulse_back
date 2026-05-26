@@ -9,7 +9,7 @@ class Shop(BaseModelOnlyId):
     url - ссылка по которой будет производиться поиск
     """
     __tablename__ = "shop"
-    name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True, index=True)
     url: Mapped[str] = mapped_column(String(150), nullable=False)
     shop_shop_link = relationship('ShopLink', back_populates='shop', cascade='all, delete-orphan')
 

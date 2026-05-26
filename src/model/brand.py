@@ -8,7 +8,7 @@ class Brand(BaseModelOnlyId):
     """Модель для бренда товара: id, name, country
     """
     __tablename__ = "brand"
-    name: Mapped[str] = mapped_column(String(50), nullable=False)
+    name: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
     country: Mapped[str] = mapped_column(String(50), nullable=True)
     tv_brand = relationship("TV", back_populates='brand', cascade='all, delete-orphan')
 
