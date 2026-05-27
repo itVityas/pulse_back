@@ -70,17 +70,10 @@ async def get_main_filters(session=Depends(get_session)):
         })
 
         rez_dict.append({
-            'title': 'Минимальная диагональ',
-            'search_name': 'min_diagonal',
-            'values': [24],
-            'type': 'min_range'
-        })
-
-        rez_dict.append({
-            'title': 'Максимальная диагональ',
-            'search_name': 'max_diagonal',
-            'values': [110],
-            'type': 'max_range'
+            'title': 'Диагональ',
+            'search_name': 'diagonal',
+            'values': {'min': 24, 'max': 110},
+            'type': 'range'
         })
 
         currency_obj, _ = await CurrencyData(session).get_multi(limit=-1)
