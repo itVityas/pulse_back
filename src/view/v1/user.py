@@ -22,6 +22,7 @@ from service.security import (
     create_access_token,
     create_refresh_token,
     decode_refresh_token,)
+from share.my_exception import MyHttpException
 
 
 router = APIRouter(prefix="/users", tags=["Users"])
@@ -114,7 +115,10 @@ async def login_user(login_schema: UserLoginSchema, request: Request, session=De
     try:
         user = await UserData(session).authenticate(login_schema.username, login_schema.password)
         if not user:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+            raise MyHttpException(
+                title="Не верный логин или пароль",
+                detail="Invalid username or password",
+                status_code=401)
         access_token = create_access_token(user)
         refresh_token = create_refresh_token(user)
         payload = decode_refresh_token(refresh_token)
@@ -132,6 +136,8 @@ async def login_user(login_schema: UserLoginSchema, request: Request, session=De
         await session.commit()
 
         return TokenSchema(access_token=access_token, refresh_token=refresh_token)
+    except MyHttpException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
