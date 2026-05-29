@@ -3,7 +3,7 @@ from fastapi import APIRouter, status, Depends
 from share.my_exception import MyHttpException
 from settings.database import get_session
 from schema.main_chart import MainChartRequestSchema
-from repository.day_price import DayPriceData
+from repository.tv import TVData
 
 
 router = APIRouter(prefix='/chart', tags=['Chart'],)
@@ -12,8 +12,6 @@ router = APIRouter(prefix='/chart', tags=['Chart'],)
 @router.get('/main_chart/', status_code=status.HTTP_200_OK)
 async def get_main_chart(chart: MainChartRequestSchema, session=Depends(get_session)):
     try:
-        result = {}
-
         shops = None
         brands = None
         os = None
@@ -45,7 +43,7 @@ async def get_main_chart(chart: MainChartRequestSchema, session=Depends(get_sess
             elif item.field == 'currency':
                 currency = item.data
 
-        results = await DayPriceData(session=session).get_for_main_chart(
+        results = await TVData(session=session).get_for_main_chart(
             date_start=date_start,
             date_end=date_end,
             diag_min=diag_min,
@@ -58,9 +56,8 @@ async def get_main_chart(chart: MainChartRequestSchema, session=Depends(get_sess
             refresh_rate=refresh_rate,
             currency=currency
         )
-        print(results)
 
-        return {"status": "success", "processed_filters": result}
+        return results
     except MyHttpException:
         raise
     except Exception as e:
