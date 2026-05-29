@@ -1,8 +1,8 @@
 """init
 
-Revision ID: 31487095b729
+Revision ID: 82ee9c198bc0
 Revises:
-Create Date: 2026-05-21 07:43:25.449725
+Create Date: 2026-05-29 10:06:57.050001
 
 """
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = "31487095b729"
+revision: str = "82ee9c198bc0"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -29,30 +29,31 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(op.f("ix_brand_id"), "brand", ["id"], unique=False)
+    op.create_index(op.f("ix_brand_name"), "brand", ["name"], unique=False)
     op.create_table(
         "currency",
         sa.Column("name", sa.String(length=3), nullable=False),
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("name"),
     )
     op.create_index(op.f("ix_currency_id"), "currency", ["id"], unique=False)
+    op.create_index(op.f("ix_currency_name"), "currency", ["name"], unique=True)
     op.create_table(
         "matrix_type",
         sa.Column("name", sa.String(length=20), nullable=False),
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("name"),
     )
     op.create_index(op.f("ix_matrix_type_id"), "matrix_type", ["id"], unique=False)
+    op.create_index(op.f("ix_matrix_type_name"), "matrix_type", ["name"], unique=True)
     op.create_table(
         "os",
         sa.Column("name", sa.String(length=100), nullable=False),
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("name"),
     )
     op.create_index(op.f("ix_os_id"), "os", ["id"], unique=False)
+    op.create_index(op.f("ix_os_name"), "os", ["name"], unique=True)
     op.create_table(
         "screen_resolution",
         sa.Column("name", sa.String(length=10), nullable=False),
@@ -60,10 +61,12 @@ def upgrade() -> None:
         sa.Column("height", sa.Integer(), nullable=False),
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("name"),
     )
     op.create_index(
         op.f("ix_screen_resolution_id"), "screen_resolution", ["id"], unique=False
+    )
+    op.create_index(
+        op.f("ix_screen_resolution_name"), "screen_resolution", ["name"], unique=True
     )
     op.create_table(
         "shop",
@@ -71,9 +74,9 @@ def upgrade() -> None:
         sa.Column("url", sa.String(length=150), nullable=False),
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("name"),
     )
     op.create_index(op.f("ix_shop_id"), "shop", ["id"], unique=False)
+    op.create_index(op.f("ix_shop_name"), "shop", ["name"], unique=True)
     op.create_table(
         "users",
         sa.Column("username", sa.String(length=50), nullable=False),
@@ -93,6 +96,7 @@ def upgrade() -> None:
         sa.Column("currency_id", sa.Integer(), nullable=False),
         sa.Column("base_currency_id", sa.Integer(), nullable=False),
         sa.Column("rate", sa.Numeric(precision=18, scale=6), nullable=False),
+        sa.Column("scale", sa.Integer(), server_default="1", nullable=False),
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.ForeignKeyConstraint(
             ["base_currency_id"],
@@ -130,7 +134,7 @@ def upgrade() -> None:
     )
     op.create_table(
         "tv",
-        sa.Column("name", sa.String(length=100), nullable=False),
+        sa.Column("name", sa.String(length=250), nullable=False),
         sa.Column("os_id", sa.Integer(), nullable=True),
         sa.Column("screen_resolution_id", sa.Integer(), nullable=True),
         sa.Column("brand_id", sa.Integer(), nullable=True),
@@ -164,7 +168,7 @@ def upgrade() -> None:
         "shop_link",
         sa.Column("shop_id", sa.Integer(), nullable=False),
         sa.Column("tv_id", sa.Integer(), nullable=False),
-        sa.Column("link", sa.String(length=250), nullable=False),
+        sa.Column("link", sa.Text(), nullable=False),
         sa.Column("is_active", sa.Boolean(), nullable=False),
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
@@ -185,8 +189,7 @@ def upgrade() -> None:
         sa.Column("shop_link_id", sa.Integer(), nullable=False),
         sa.Column("currency_id", sa.Integer(), nullable=False),
         sa.Column("price", sa.Float(), nullable=False),
-        sa.Column("discount_price", sa.Float(), nullable=True),
-        sa.Column("card_price", sa.Float(), nullable=True),
+        sa.Column("name", sa.String(), nullable=False),
         sa.Column("date", sa.Date(), nullable=False),
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.ForeignKeyConstraint(
@@ -219,16 +222,22 @@ def downgrade() -> None:
     op.drop_table("exchange_rate")
     op.drop_index(op.f("ix_users_id"), table_name="users")
     op.drop_table("users")
+    op.drop_index(op.f("ix_shop_name"), table_name="shop")
     op.drop_index(op.f("ix_shop_id"), table_name="shop")
     op.drop_table("shop")
+    op.drop_index(op.f("ix_screen_resolution_name"), table_name="screen_resolution")
     op.drop_index(op.f("ix_screen_resolution_id"), table_name="screen_resolution")
     op.drop_table("screen_resolution")
+    op.drop_index(op.f("ix_os_name"), table_name="os")
     op.drop_index(op.f("ix_os_id"), table_name="os")
     op.drop_table("os")
+    op.drop_index(op.f("ix_matrix_type_name"), table_name="matrix_type")
     op.drop_index(op.f("ix_matrix_type_id"), table_name="matrix_type")
     op.drop_table("matrix_type")
+    op.drop_index(op.f("ix_currency_name"), table_name="currency")
     op.drop_index(op.f("ix_currency_id"), table_name="currency")
     op.drop_table("currency")
+    op.drop_index(op.f("ix_brand_name"), table_name="brand")
     op.drop_index(op.f("ix_brand_id"), table_name="brand")
     op.drop_table("brand")
     # ### end Alembic commands ###

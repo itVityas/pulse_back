@@ -15,8 +15,7 @@ class DayPrice(BaseModelOnlyId):
     currency_id: Mapped[int] = mapped_column(ForeignKey('currency.id'), nullable=False)
     currency = relationship('Currency', back_populates='currency_shop_link')
     price: Mapped[float] = mapped_column(nullable=False)
-    discount_price: Mapped[float] = mapped_column(nullable=True)
-    card_price: Mapped[float] = mapped_column(nullable=True)
+    name: Mapped[str] = mapped_column(nullable=False)
     date: Mapped[idate] = mapped_column(insert_default=func.now(), nullable=False)
 
     def __str__(self):
