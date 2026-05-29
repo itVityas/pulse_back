@@ -12,8 +12,7 @@ class DayPriceUpdateSchema(BaseModel):
     shop_link_id: Optional[int] = None
     currency_id: Optional[int] = None
     price: Optional[float] = None
-    discount_price: Optional[float] = None
-    card_price: Optional[float] = None
+    name: Optional[str] = None
     date: Optional[idate] = None
 
     class Config:
@@ -24,8 +23,7 @@ class DayPricePostSchema(BaseModel):
     shop_link_id: int
     currency_id: int
     price: float
-    discount_price: Optional[float] = None
-    card_price: Optional[float] = None
+    name: str
     date: idate
 
     class Config:
@@ -37,8 +35,7 @@ class DayPriceSmallResponseSchema(BaseModel):
     shop_link_id: int
     currency_id: int
     price: float
-    discount_price: float
-    card_price: float
+    name: str
     date: idate
 
     class Config:
@@ -50,8 +47,7 @@ class DayPriceFullResponseSchema(BaseModel):
     shop_link: ShopLinkResponceFullSchema
     currency: CurrencyFullSchema
     price: float
-    discount_price: float
-    card_price: float
+    name: str
     date: idate
 
     class Config:
@@ -63,8 +59,11 @@ class DayPriceFilterSchema(PaginationSortParamsSchema):
     shop_link_id: Optional[int] = None
     currency_id: Optional[int] = None
     price: Optional[float] = None
-    discount_price: Optional[float] = None
-    card_price: Optional[float] = None
+    name: Optional[str] = None
+    name__ne: Optional[str] = None
+    name__icontains: Optional[str] = None
+    name__istartswith: Optional[str] = None
+    name__iendswith: Optional[str] = None
     date: Optional[str] = None
     date__gte: Optional[str] = None
     date__lte: Optional[str] = None

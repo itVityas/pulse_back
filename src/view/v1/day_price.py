@@ -39,8 +39,12 @@ async def day_price_list(
     - Фильтр по shop_link_id: ?shop_link_id=1
     - Фильтр по currency_id: ?currency_id=1
     - Фильтр по price: ?price=1.0
-    - Фильтр по discount_price: ?discount_price=1.0
-    - Фильтр по card_price: ?card_price=1.0
+    - Фильтр по названию: ?name=Linux
+    - Точное совпадение названия: ?name=Linux
+    - Название не равно: ?name_ne=Linux
+    - Название содержит подстроку: ?name_icontains=Linux
+    - Название начинается с: ?name_istartswith=Linux
+    - Название заканчивается на: ?name_iendswith=Linux
     - Фильтр по date: ?date=2020-01-01
     - Фильтр по date (больше): ?date__gte=2020-01-01
     - Фильтр по date (меньше): ?date__lte=2020-01-01

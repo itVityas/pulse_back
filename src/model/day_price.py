@@ -19,4 +19,4 @@ class DayPrice(BaseModelOnlyId):
     date: Mapped[idate] = mapped_column(insert_default=func.now(), nullable=False)
 
     def __str__(self):
-        return f'<Currency>: {self.id}'
+        return f'<DayPrice>: {self.id}'
