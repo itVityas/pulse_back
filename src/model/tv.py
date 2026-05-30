@@ -10,7 +10,7 @@ class TV(BaseModelOnlyId):
     """
     __tablename__ = "tv"
 
-    name: Mapped[str] = mapped_column(String(250), nullable=False, unique=True)
+    name: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
     os_id: Mapped[int] = mapped_column(ForeignKey('os.id'), nullable=True)
     os = relationship("OS", back_populates='tv_os')
     screen_resolution_id: Mapped[int] = mapped_column(ForeignKey('screen_resolution.id'), nullable=True)

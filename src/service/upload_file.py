@@ -230,7 +230,7 @@ async def file_upload_handle(
                 tv = await TVData(session).get_by_name(name)
                 if not tv:
                     tv_model = TV(
-                        name=name[:250],
+                        name=name,
                         description=description,
                         diagonal=diagonal,
                         refresh_rate=refresh_rate,
@@ -253,15 +253,33 @@ async def file_upload_handle(
                     )
                     shop_link = await ShopLinkData(session).create_by_model(shop_link_model)
 
-                day_price_model = DayPrice(
-                        shop_link_id=shop_link.id,
-                        price=full_price,
-                        card_price=card_price,
-                        discount_price=price,
-                        currency_id=currency_id,
-                        date=date
-                    )
-                await DayPriceData(session).create_by_model(day_price_model)
+                if card_price != 0:
+                    day_price_model = DayPrice(
+                            shop_link_id=shop_link.id,
+                            price=card_price,
+                            name='card_price',
+                            currency_id=currency_id,
+                            date=date
+                        )
+                    await DayPriceData(session).create_by_model(day_price_model)
+                if full_price != 0:
+                    day_price_model = DayPrice(
+                            shop_link_id=shop_link.id,
+                            price=full_price,
+                            name='full_price',
+                            currency_id=currency_id,
+                            date=date
+                        )
+                    await DayPriceData(session).create_by_model(day_price_model)
+                if price != 0:
+                    day_price_model = DayPrice(
+                            shop_link_id=shop_link.id,
+                            price=price,
+                            name='discount_price',
+                            currency_id=currency_id,
+                            date=date
+                        )
+                    await DayPriceData(session).create_by_model(day_price_model)
 
                 line_count += 1
     except Exception as e:
