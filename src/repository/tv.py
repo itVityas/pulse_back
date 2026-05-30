@@ -2,7 +2,7 @@ from datetime import date
 from typing import Optional, List
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
 
 from model.tv import TV
@@ -103,7 +103,7 @@ class TVData(BaseData):
             for shop_link in tv.tv_shop_link:
                 for day_price in shop_link.price_shop_link:
                     buf_date = rez_list.get(day_price.date)
-                    min_price = min([x for x in (day_price.price, day_price.discount_price, day_price.card_price) if x != 0])
+                    min_price = day_price.price
                     if buf_date:
                         shop = buf_date.get(shop_link.shop.name)
                         if shop:
