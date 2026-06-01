@@ -9,7 +9,7 @@ from repository.day_price import DayPriceData
 router = APIRouter(prefix='/chart', tags=['Chart'],)
 
 
-@router.get('/main_chart/', status_code=status.HTTP_200_OK)
+@router.post('/main_chart/', status_code=status.HTTP_200_OK)
 async def get_main_chart(
         chart: MainChartRequestSchema,
         session=Depends(get_session)
