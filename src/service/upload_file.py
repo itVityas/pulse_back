@@ -66,7 +66,7 @@ async def file_upload_handle(
                         if column.find('разрешение') != -1 or column.find('стандарт разрешения') != -1:
                             title_dict['screen_resolution'] = indx
                             continue
-                        if column.find('оперативная система') != -1:
+                        if column.find('операционная система') != -1:
                             title_dict['os'] = indx
                             continue
                         if column.find('цена до скидки') != -1 or column.find('цена со скидкой') != -1:
