@@ -115,4 +115,11 @@ class DayPriceData(BaseData):
             else:
                 buf_rez[line[2]] = [(str(line[1]), line[0]),]
 
-        return buf_rez
+        buf_rez2 = []
+        for key, value in buf_rez.items():
+            buf_rez2.append({
+                'name': key,
+                'coords': value
+            })
+
+        return buf_rez2
