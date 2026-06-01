@@ -10,6 +10,6 @@ class BrandData(BaseData):
         super().__init__(model=Brand, session=session)
 
     async def get_by_name(self, name: str):
-        slct = select(self.model).where(self.model.name == name)
+        slct = select(self.model).where(self.model.name.ilike(name))
         result = await self.session.execute(slct)
         return result.scalars().first()

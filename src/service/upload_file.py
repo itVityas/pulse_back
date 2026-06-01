@@ -39,7 +39,7 @@ async def file_upload_handle(
 
             line_count = 0
             title_dict = {}
-            for row in sheet.iter_rows(values_only=True, max_col=20):
+            for row in sheet.iter_rows(values_only=True, max_col=70):
                 if line_count == 0:
                     for indx, colum_name in enumerate(row):
                         if colum_name is None:
@@ -154,7 +154,7 @@ async def file_upload_handle(
                         if cell is None:
                             break
                         brand_buf = str(cell).lower().replace('.', '')
-                        if brand_buf.find('') is None or brand_buf == '':
+                        if brand_buf is None or brand_buf == '':
                             brand = None
                             continue
                         if brand_buf.find('телевизор') != -1:
