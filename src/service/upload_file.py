@@ -59,6 +59,7 @@ async def file_upload_handle(
                             continue
                         if column.find('технология экрана') != -1 or column.find('тип матрицы') != -1:
                             title_dict['matrix_type'] = indx
+                            print(indx)
                             continue
                         if column.find('бренд') != -1:
                             title_dict['brand'] = indx
@@ -147,7 +148,7 @@ async def file_upload_handle(
                             matrix_type = await MatrixTypeData(session).get_by_name('DLED')
                         elif matrix_type_buf.find('oled') != -1:
                             matrix_type = await MatrixTypeData(session).get_by_name('OLED')
-                        elif matrix_type_buf('led') != -1:
+                        elif matrix_type_buf.find('led') != -1:
                             matrix_type = await MatrixTypeData(session).get_by_name('LED')
                         continue
                     if indx == title_dict.get('brand'):
