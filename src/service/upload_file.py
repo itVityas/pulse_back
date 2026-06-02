@@ -136,7 +136,7 @@ async def file_upload_handle(
                         if cell is None:
                             break
                         matrix_type_buf = str(cell).lower()
-                        if matrix_type_buf.find('TN') != -1:
+                        if matrix_type_buf.find('tn') != -1:
                             matrix_type = await MatrixTypeData(session).get_by_name('TN')
                         elif matrix_type_buf.find('ips') != -1:
                             matrix_type = await MatrixTypeData(session).get_by_name('IPS')
