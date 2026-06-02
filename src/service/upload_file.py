@@ -229,6 +229,8 @@ async def file_upload_handle(
                     continue
                 tv = await TVData(session).get_by_name(name)
                 if not tv:
+                    if brand is None:
+                        brand = await BrandData(session).get_by_entry(tv_name=name)
                     tv_model = TV(
                         name=name,
                         description=description,
