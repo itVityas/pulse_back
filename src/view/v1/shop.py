@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, status
 
 from settings.database import get_session
 from repository.shop import ShopData
@@ -9,6 +9,7 @@ from schema.shop import (
     ShopSmallSchema,
     ShopUpdateShema,
 )
+from share.my_exception import MyHttpException
 
 
 router = APIRouter(prefix='/shops', tags=['Shops'])
@@ -58,8 +59,14 @@ async def shops_get(
             size=pagination.page_size,
             pages=pages
         )
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )
 
 
 @router.post('/', response_model=ShopSmallSchema)
@@ -68,18 +75,34 @@ async def shop_create(shop: ShopSmallSchema, session=Depends(get_session)):
         shop_data = ShopData(session)
         new_shop = await shop_data.create(shop)
         return ShopSmallSchema.model_validate(new_shop)
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )
 
 
 @router.patch('/patch/{id}/', response_model=ShopSmallSchema)
-async def shop_update(id: int, shop: ShopUpdateShema, session=Depends(get_session)):
+async def shop_update(
+            id: int,
+            shop: ShopUpdateShema,
+            session=Depends(get_session)
+        ):
     try:
         shop_data = ShopData(session)
         model = await shop_data.update(id, shop)
         return ShopSmallSchema.model_validate(model)
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )
 
 
 @router.delete('/delete/{id}/', status_code=status.HTTP_204_NO_CONTENT)
@@ -87,5 +110,11 @@ async def shop_delete(id: int, session=Depends(get_session)):
     try:
         shop_data = ShopData(session)
         await shop_data.delete(id)
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, status
 
 from settings.database import get_session
 from repository.tv import TVData
@@ -10,13 +10,17 @@ from schema.tv import (
     TVSmallResponseSchema,
     TVUpdateSchema,
 )
+from share.my_exception import MyHttpException
 
 
 router = APIRouter(prefix='/tv', tags=['TV'])
 
 
 @router.get('/', response_model=PaginationResponseSchema[TVFullResponceSchema])
-async def tv_list(pagination: TVFilterSchema = Depends(), session=Depends(get_session)):
+async def tv_list(
+            pagination: TVFilterSchema = Depends(),
+            session=Depends(get_session)
+        ):
     """Получить список обмена валют с пагинацией и сортировкой
 
     параметры пагинации:
@@ -66,8 +70,14 @@ async def tv_list(pagination: TVFilterSchema = Depends(), session=Depends(get_se
             size=pagination.page_size,
             pages=pages
         )
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )
 
 
 @router.post('/', response_model=TVSmallResponseSchema)
@@ -76,8 +86,14 @@ async def tv_create(tv: TVPOSTSchema, session=Depends(get_session)):
         tv_data = TVData(session)
         new_tv = await tv_data.create(tv)
         return TVSmallResponseSchema.model_validate(new_tv)
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )
 
 
 @router.patch('/patch/{id}/', response_model=TVSmallResponseSchema)
@@ -86,8 +102,14 @@ async def tv_update(id: int, tv: TVUpdateSchema, session=Depends(get_session)):
         tv_data = TVData(session)
         model = await tv_data.update(id, tv)
         return TVSmallResponseSchema.model_validate(model)
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )
 
 
 @router.delete('/delete/{id}/', status_code=status.HTTP_204_NO_CONTENT)
@@ -95,5 +117,11 @@ async def tv_delete(id: int, session=Depends(get_session)):
     try:
         tv_data = TVData(session)
         await tv_data.delete(id)
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )

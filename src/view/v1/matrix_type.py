@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, status
 
 from settings.database import get_session
 from repository.matrix_type import MatrixTypeData
@@ -9,12 +9,16 @@ from schema.matrix_type import (
     MatrixTypeSmallSchema,
     MatrixTypeUpdateSchema,
 )
+from share.my_exception import MyHttpException
 
 router = APIRouter(prefix='/matrix_type', tags=['MatrixType'])
 
 
 @router.get('/', response_model=PaginationResponseSchema[MatrixTypeFullSchema])
-async def matrix_type_list(pagination: MatrixTypeParamsSchema = Depends(), session=Depends(get_session)):
+async def matrix_type_list(
+        pagination: MatrixTypeParamsSchema = Depends(),
+        session=Depends(get_session)
+        ):
     """Получить список типов матриц с пагинацией, сортировкой и фильтрацией
 
     параметры пагинации:
@@ -54,28 +58,53 @@ async def matrix_type_list(pagination: MatrixTypeParamsSchema = Depends(), sessi
             size=pagination.page_size,
             pages=pages
         )
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )
 
 
 @router.post('/', response_model=MatrixTypeSmallSchema)
-async def matrix_type_create(matrix_type: MatrixTypeSmallSchema, session=Depends(get_session)):
+async def matrix_type_create(
+            matrix_type: MatrixTypeSmallSchema,
+            session=Depends(get_session)
+        ):
     try:
         matrix_type_data = MatrixTypeData(session)
         new_matrix_type = await matrix_type_data.create(matrix_type)
         return MatrixTypeSmallSchema.model_validate(new_matrix_type)
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )
 
 
 @router.patch('/patch/{id}/', response_model=MatrixTypeSmallSchema)
-async def matrix_type_update(id: int, matrix_type: MatrixTypeUpdateSchema, session=Depends(get_session)):
+async def matrix_type_update(
+            id: int,
+            matrix_type: MatrixTypeUpdateSchema,
+            session=Depends(get_session)
+        ):
     try:
         matrix_type_data = MatrixTypeData(session)
         model = await matrix_type_data.update(id, matrix_type)
         return MatrixTypeSmallSchema.model_validate(model)
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )
 
 
 @router.delete('/delete/{id}/', status_code=status.HTTP_204_NO_CONTENT)
@@ -83,5 +112,11 @@ async def matrix_type_delete(id: int, session=Depends(get_session)):
     try:
         matrix_type_data = MatrixTypeData(session)
         await matrix_type_data.delete(id)
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )

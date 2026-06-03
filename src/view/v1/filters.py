@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status, Depends, HTTPException
+from fastapi import APIRouter, status, Depends
 
 from settings.database import get_session
 from repository.shop import ShopData
@@ -7,6 +7,7 @@ from repository.os import OSData
 from repository.screen_resolution import ScreenResolutionData
 from repository.matrix_type import MatrixTypeData
 from repository.currency import CurrencyData
+from share.my_exception import MyHttpException
 
 
 router = APIRouter(prefix='/filters', tags=['Filters'],)
@@ -86,5 +87,11 @@ async def get_main_filters(session=Depends(get_session)):
             })
 
         return rez_dict
-    except Exception as ex:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(ex))
+    except MyHttpException:
+        raise
+    except Exception as e:
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )

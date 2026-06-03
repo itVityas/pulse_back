@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, status, Request
 from sqlalchemy import select, delete
 
 from schema.user import (
@@ -71,8 +71,14 @@ async def get_users(
             size=pagination.page_size,
             pages=pages
         )
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )
 
 
 @router.post('/', response_model=UserGetSchema, status_code=status.HTTP_201_CREATED)
@@ -81,19 +87,34 @@ async def create_user(user: UserCreateSchema, session=Depends(get_session)):
         user_model = UserData(session)
         new_user = await user_model.create(user)
         return UserGetSchema.model_validate(new_user)
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )
 
 
 @router.put('/change_password/', response_model=UserGetSchema)
-async def change_password_user(user: UserChangePasswordSchema, session=Depends(get_session)):
+async def change_password_user(
+            user: UserChangePasswordSchema,
+            session=Depends(get_session)
+        ):
     try:
         user_data = UserData(session)
         model = await user_data.change_password(
             id=user.id, password=user.new_password, old_password=user.old_password)
         return UserGetSchema.model_validate(model)
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )
 
 
 @router.put('/change_active/', response_model=UserGetSchema)
@@ -106,12 +127,22 @@ async def change_active_user(
         user_data = UserData(session)
         model = await user_data.change_state(id=user.id, is_active=user.is_active)
         return UserGetSchema.model_validate(model)
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )
 
 
 @router.post('/login/', response_model=TokenSchema)
-async def login_user(login_schema: UserLoginSchema, request: Request, session=Depends(get_session)):
+async def login_user(
+            login_schema: UserLoginSchema,
+            request: Request,
+            session=Depends(get_session)
+        ):
     try:
         user = await UserData(session).authenticate(login_schema.username, login_schema.password)
         if not user:
@@ -139,22 +170,42 @@ async def login_user(login_schema: UserLoginSchema, request: Request, session=De
     except MyHttpException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )
 
 
 @router.post('/refresh/', response_model=TokenSchema)
-async def refresh_token(token: RefreshTokenSchema, request: Request, session=Depends(get_session)):
+async def refresh_token(
+            token: RefreshTokenSchema,
+            request: Request,
+            session=Depends(get_session)
+        ):
     try:
         result = await session.execute(select(RefreshToken).where(RefreshToken.token == token.refresh_token))
         db_refresh_token = result.scalar_one_or_none()
         if not db_refresh_token or db_refresh_token.revoked or db_refresh_token.expires_at < datetime.now(tz=None):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid refresh token")
+            raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(db_refresh_token),
+                title="Invalid refresh token"
+            )
         payload = decode_refresh_token(db_refresh_token.token)
         if not payload or payload.get("type") != "refresh":
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid refresh token payload")
+            raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(payload),
+                title="Invalid refresh token payload"
+            )
         user = await UserData(session).get_one(int(payload.get("id")))
         if not user:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User not found")
+            raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="User not found",
+                title="User not found"
+            )
 
         query = delete(RefreshToken).where(RefreshToken.user_id == user.id)
         await session.execute(query)
@@ -181,5 +232,11 @@ async def refresh_token(token: RefreshTokenSchema, request: Request, session=Dep
 
         return TokenSchema(access_token=access_token, refresh_token=refresh_token)
 
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )

@@ -11,9 +11,9 @@ router = APIRouter(prefix='/chart', tags=['Chart'],)
 
 @router.post('/main_chart/', status_code=status.HTTP_200_OK)
 async def get_main_chart(
-        chart: MainChartRequestSchema,
-        session=Depends(get_session)
-):
+            chart: MainChartRequestSchema,
+            session=Depends(get_session)
+        ):
     try:
         shops = None
         brands = None
@@ -64,4 +64,8 @@ async def get_main_chart(
     except MyHttpException:
         raise
     except Exception as e:
-        raise MyHttpException(status_code=400, detail=str(e), title='')
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )

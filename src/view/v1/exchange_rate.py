@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import selectinload
 
 from model.exchange_rate import ExchangeRate
@@ -14,6 +14,7 @@ from schema.pagination import PaginationResponseSchema
 from repository.exchange_rate import ExchangeRateData
 from settings.database import get_session
 from service.currency_upload import get_currency_from_nbrb
+from share.my_exception import MyHttpException
 
 
 router = APIRouter(prefix='/exchange_rate', tags=['ExchangeRate'])
@@ -63,18 +64,33 @@ async def exchange_rate_list(
             size=pagination.page_size,
             pages=pages
         )
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )
 
 
 @router.post('/', response_model=ExchangeRateSimpleSchema)
-async def exchange_rate_create(exchange_rate: ExchangeRateSmallSchema, session=Depends(get_session)):
+async def exchange_rate_create(
+            exchange_rate: ExchangeRateSmallSchema,
+            session=Depends(get_session)
+        ):
     try:
         exchange_rate_data = ExchangeRateData(session)
         new_exchange_rate = await exchange_rate_data.create(exchange_rate)
         return ExchangeRateSimpleSchema.model_validate(new_exchange_rate)
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )
 
 
 @router.delete('/delete/{id}/', status_code=status.HTTP_204_NO_CONTENT)
@@ -82,27 +98,52 @@ async def exchange_rate_delete(id: int, session=Depends(get_session)):
     try:
         exchange_rate_data = ExchangeRateData(session)
         await exchange_rate_data.delete(id)
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )
 
 
 @router.patch('/patch/{id}/', response_model=ExchangeRateSimpleSchema)
-async def exchange_rate_patch(id: int, exchange_rate: ExchangeRatePatchSchema, session=Depends(get_session)):
+async def exchange_rate_patch(
+            id: int,
+            exchange_rate: ExchangeRatePatchSchema,
+            session=Depends(get_session)
+        ):
     try:
         exchange_rate_data = ExchangeRateData(session)
         model = await exchange_rate_data.update(id, exchange_rate)
         return ExchangeRateSimpleSchema.model_validate(model)
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )
 
 
 @router.post('/upload/', status_code=status.HTTP_201_CREATED)
-async def currency_upload(upload_data: UploadCurrencySchema, session=Depends(get_session)):
+async def currency_upload(
+            upload_data: UploadCurrencySchema,
+            session=Depends(get_session)
+        ):
     """upload currency from nbrb
     date: date witch upload
     """
     try:
         count = await get_currency_from_nbrb(session, upload_data.date)
         return {'status': 'created', 'count': count}
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )

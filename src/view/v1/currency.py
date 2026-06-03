@@ -1,9 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 
-from schema.currency import (CurrencyFullSchema, CurrencySmallSchema, CurrencyPaginationParamsSchema)
+from schema.currency import (
+    CurrencyFullSchema,
+    CurrencySmallSchema,
+    CurrencyPaginationParamsSchema)
 from repository.currency import CurrencyData
 from settings.database import get_session
 from schema.pagination import PaginationResponseSchema
+from share.my_exception import MyHttpException
 
 
 router = APIRouter(prefix='/currency', tags=['Currency'])
@@ -48,28 +52,53 @@ async def currency_list(
             size=pagination.page_size,
             pages=pages
         )
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )
 
 
 @router.post('/', response_model=CurrencyFullSchema, status_code=status.HTTP_201_CREATED)
-async def currency_create(currency: CurrencySmallSchema, session=Depends(get_session)):
+async def currency_create(
+            currency: CurrencySmallSchema,
+            session=Depends(get_session)
+        ):
     try:
         currency_data = CurrencyData(session)
         new_currency = await currency_data.create(currency)
         return CurrencyFullSchema.model_validate(new_currency)
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )
 
 
 @router.put('/update/{id}/', response_model=CurrencyFullSchema)
-async def currency_change(id: int, currensy: CurrencySmallSchema, session=Depends(get_session)):
+async def currency_change(
+            id: int,
+            currensy: CurrencySmallSchema,
+            session=Depends(get_session)
+        ):
     try:
         currency_data = CurrencyData(session)
         model = await currency_data.update(id, currensy)
         return CurrencyFullSchema.model_validate(model)
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )
 
 
 @router.delete('/delete/{id}/', status_code=status.HTTP_204_NO_CONTENT)
@@ -77,5 +106,11 @@ async def currency_delete(id: int, session=Depends(get_session)):
     try:
         currency_data = CurrencyData(session)
         await currency_data.delete(id)
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )

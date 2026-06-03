@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, status
 
 from settings.database import get_session
 from repository.screen_resolution import ScreenResolutionData
@@ -9,6 +9,7 @@ from schema.screen_resolution import (
     ScreenResolutionSmallSchema,
     ScreenResolutionUpdateSchema,
 )
+from share.my_exception import MyHttpException
 
 
 router = APIRouter(prefix='/screen_resolutions', tags=['ScreenResolutions'])
@@ -59,18 +60,33 @@ async def screen_resolutions_list(
             size=pagination.page_size,
             pages=pages
         )
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )
 
 
 @router.post('/', response_model=ScreenResolutionSmallSchema)
-async def screen_resolution_create(screen_resolution: ScreenResolutionSmallSchema, session=Depends(get_session)):
+async def screen_resolution_create(
+            screen_resolution: ScreenResolutionSmallSchema,
+            session=Depends(get_session)
+        ):
     try:
         screen_resolution_data = ScreenResolutionData(session)
         new_screen_resolution = await screen_resolution_data.create(screen_resolution)
         return ScreenResolutionSmallSchema.model_validate(new_screen_resolution)
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )
 
 
 @router.patch('/patch/{id}/', response_model=ScreenResolutionSmallSchema)
@@ -82,8 +98,14 @@ async def screen_resolution_update(
         screen_resolution_data = ScreenResolutionData(session)
         model = await screen_resolution_data.update(id, screen_resolution)
         return ScreenResolutionSmallSchema.model_validate(model)
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )
 
 
 @router.delete('/delete/{id}/', status_code=status.HTTP_204_NO_CONTENT)
@@ -91,5 +113,11 @@ async def screen_resolution_delete(id: int, session=Depends(get_session)):
     try:
         screen_resolution_data = ScreenResolutionData(session)
         await screen_resolution_data.delete(id)
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )

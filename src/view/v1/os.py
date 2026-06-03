@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status, HTTPException, Depends
+from fastapi import APIRouter, status, Depends
 
 from settings.database import get_session
 from repository.os import OSData
@@ -9,12 +9,17 @@ from schema.os import (
     OSSmallSchema,
     OSUpdateSchema,
 )
+from share.my_exception import MyHttpException
+
 
 router = APIRouter(prefix="/os", tags=["OS"],)
 
 
 @router.get('/', response_model=PaginationResponseSchema[OSFullSchema])
-async def os_list(pagination: OSParamFilterSchema = Depends(), session=Depends(get_session)):
+async def os_list(
+            pagination: OSParamFilterSchema = Depends(),
+            session=Depends(get_session)
+        ):
     """Получить список операционных систем с пагинацией, сортировкой и фильтрацией
 
     параметры пагинации:
@@ -54,8 +59,14 @@ async def os_list(pagination: OSParamFilterSchema = Depends(), session=Depends(g
             size=pagination.page_size,
             pages=pages
         )
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )
 
 
 @router.post('/', response_model=OSSmallSchema)
@@ -64,8 +75,14 @@ async def os_create(os: OSSmallSchema, session=Depends(get_session)):
         os_data = OSData(session)
         new_os = await os_data.create(os)
         return OSSmallSchema.model_validate(new_os)
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )
 
 
 @router.patch('/patch/{id}/', response_model=OSSmallSchema)
@@ -74,8 +91,14 @@ async def os_update(id: int, os: OSUpdateSchema, session=Depends(get_session)):
         os_data = OSData(session)
         model = await os_data.update(id, os)
         return OSSmallSchema.model_validate(model)
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )
 
 
 @router.delete('/delete/{id}/', status_code=status.HTTP_204_NO_CONTENT)
@@ -83,5 +106,11 @@ async def os_delete(id: int, session=Depends(get_session)):
     try:
         os_data = OSData(session)
         await os_data.delete(id)
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )

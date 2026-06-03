@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import selectinload
 
 from settings.database import get_session
@@ -14,6 +14,7 @@ from schema.day_price import (
     DayPriceUpdateSchema,
     DayPriceSmallResponseSchema,
 )
+from share.my_exception import MyHttpException
 
 
 router = APIRouter(prefix='/day_price', tags=['DayPrice'])
@@ -80,28 +81,53 @@ async def day_price_list(
             size=pagination.page_size,
             pages=pages,
         )
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )
 
 
 @router.post('/', response_model=DayPriceSmallResponseSchema)
-async def day_price_create(day_price: DayPricePostSchema, session=Depends(get_session)):
+async def day_price_create(
+            day_price: DayPricePostSchema,
+            session=Depends(get_session)
+        ):
     try:
         day_price_data = DayPriceData(session)
         new_day_price = await day_price_data.create(day_price)
         return DayPriceSmallResponseSchema.model_validate(new_day_price)
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )
 
 
 @router.patch('/patch/{id}/', response_model=DayPriceSmallResponseSchema)
-async def day_price_update(id: int, day_price: DayPriceUpdateSchema, session=Depends(get_session)):
+async def day_price_update(
+            id: int,
+            day_price: DayPriceUpdateSchema,
+            session=Depends(get_session)
+        ):
     try:
         day_price_data = DayPriceData(session)
         model = await day_price_data.update(id, day_price)
         return DayPriceSmallResponseSchema.model_validate(model)
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )
 
 
 @router.delete('/delete/{id}/', status_code=status.HTTP_204_NO_CONTENT)
@@ -109,5 +135,11 @@ async def day_price_delete(id: int, session=Depends(get_session)):
     try:
         day_price_data = DayPriceData(session)
         await day_price_data.delete(id)
+    except MyHttpException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )
