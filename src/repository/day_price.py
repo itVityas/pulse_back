@@ -2,7 +2,7 @@ from typing import Optional, List
 from datetime import date as datetype
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select, func, case
 from sqlalchemy.orm import selectinload
 
 from model.tv import TV
@@ -198,30 +198,114 @@ class DayPriceData(BaseData):
         result = await self.session.execute(slct)
         res_list = result.all()
 
-        min_price_card = None
+        min_price = None
         min_price_disc = None
-        min_price_full = None
         for rez in res_list:
-            if rez[1] == 'card_price':
-                if min_price_card:
-                    if min_price_card[0] > rez[0]:
-                        min_price_card = rez
-                else:
-                    min_price_card = rez
-            elif rez[1] == 'discount_price':
+            if not min_price:
+                min_price = rez
+            else:
+                if min_price[0] > rez[0]:
+                    min_price = rez
+            if rez[1] == 'discount_price':
                 if min_price_disc:
                     if min_price_disc[0] > rez[0]:
                         min_price_disc = rez
                 else:
                     min_price_disc = rez
-            elif rez[1] == 'full_price':
-                if min_price_full:
-                    if min_price_full[0] > rez[0]:
-                        min_price_full = rez
-                else:
-                    min_price_full = rez
+
+        change_persent = await self.get_change_price(
+            date_start, date_end, diag_min, diag_max,
+            shops, brands, os, screen_resolutions, matrix_type, refresh_rate, currency
+        )
+
         return [
-                {"min_price_card": list(min_price_card)},
+                {"min_price": list(min_price)},
                 {"min_price_disc": list(min_price_disc)},
-                {"min_price_full": list(min_price_full)}
             ]
+
+    async def get_change_price(
+        self,
+        date_start: datetype, date_end: datetype,
+        diag_min: Optional[int], diag_max: Optional[int],
+        shops: Optional[List[int]],
+        brands: Optional[List[int]],
+        os: Optional[List[int]],
+        screen_resolutions: Optional[List[int]],
+        matrix_type: Optional[List[int]],
+        refresh_rate: Optional[List[int]],
+        currency: str
+    ):
+        slct = select(
+            DayPrice
+        ).join(
+            DayPrice.shop_link
+        ).join(
+            ShopLink.tv
+        ).join(
+            ShopLink.shop
+        )
+
+        if shops:
+            slct = slct.where(
+                Shop.name.in_(shops)
+            )
+        if brands:
+            slct = slct.join(
+                    TV.brand
+                ).where(
+                    Brand.name.in_(brands)
+                )
+        if matrix_type:
+            slct = slct.join(
+                TV.matrix_type
+            ).where(
+                MatrixType.name.in_(matrix_type)
+            )
+        if os:
+            slct = slct.join(
+                TV.os
+            ).where(
+                OS.name.in_(os)
+            )
+        if screen_resolutions:
+            slct = slct.join(
+                TV.screen_resolution
+            ).where(
+                ScreenResolution.name.in_(screen_resolutions)
+            )
+        if refresh_rate:
+            slct = slct.where(
+                TV.refresh_rate.in_(refresh_rate)
+            )
+        if diag_min:
+            slct = slct.where(
+                TV.diagonal >= diag_min
+            )
+        if diag_max:
+            slct = slct.where(
+                TV.diagonal <= diag_max
+            )
+
+        f_prices = slct.cte('filtered_prices')
+
+        dates_subq = select(
+            func.min(f_prices.c.date).label('min_d'),
+            func.max(f_prices.c.date).label('max_d')
+        ).subquery()
+
+        final_slct = select(
+            func.min(
+                case(
+                    (f_prices.c.date == dates_subq.c.min_d, f_prices.c.price)
+                )
+            ).label('price_start'),
+            func.min(
+                case(
+                    (f_prices.c.date == dates_subq.c.max_d, f_prices.c.price)
+                )
+            ).label('price_end')
+        ).select_from(f_prices)
+
+        result = await self.session.execute(final_slct)
+        rez = result.fetchone()
+        print(rez)
