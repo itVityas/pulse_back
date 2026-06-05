@@ -123,3 +123,105 @@ class DayPriceData(BaseData):
             })
 
         return buf_rez2
+
+    async def get_min_price_main_chart(
+        self,
+        date_start: datetype, date_end: datetype,
+        diag_min: Optional[int], diag_max: Optional[int],
+        shops: Optional[List[int]],
+        brands: Optional[List[int]],
+        os: Optional[List[int]],
+        screen_resolutions: Optional[List[int]],
+        matrix_type: Optional[List[int]],
+        refresh_rate: Optional[List[int]],
+        currency: str
+    ) -> list:
+        slct = select(
+            func.min(DayPrice.price),
+            DayPrice.name,
+            Shop.name,
+        ).join(
+            DayPrice.shop_link
+        ).join(
+            ShopLink.tv
+        ).join(
+            ShopLink.shop
+        ).where(
+            DayPrice.date >= date_start,
+            DayPrice.date <= date_end
+        )
+
+        if shops:
+            slct = slct.where(
+                Shop.name.in_(shops)
+            )
+        if brands:
+            slct = slct.join(
+                    TV.brand
+                ).where(
+                    Brand.name.in_(brands)
+                )
+        if matrix_type:
+            slct = slct.join(
+                TV.matrix_type
+            ).where(
+                MatrixType.name.in_(matrix_type)
+            )
+        if os:
+            slct = slct.join(
+                TV.os
+            ).where(
+                OS.name.in_(os)
+            )
+        if screen_resolutions:
+            slct = slct.join(
+                TV.screen_resolution
+            ).where(
+                ScreenResolution.name.in_(screen_resolutions)
+            )
+        if refresh_rate:
+            slct = slct.where(
+                TV.refresh_rate.in_(refresh_rate)
+            )
+        if diag_min:
+            slct = slct.where(
+                TV.diagonal >= diag_min
+            )
+        if diag_max:
+            slct = slct.where(
+                TV.diagonal <= diag_max
+            )
+        slct = slct.group_by(
+            DayPrice.name,
+            Shop.name,
+        )
+        result = await self.session.execute(slct)
+        res_list = result.all()
+
+        min_price_card = None
+        min_price_disc = None
+        min_price_full = None
+        for rez in res_list:
+            if rez[1] == 'card_price':
+                if min_price_card:
+                    if min_price_card[0] > rez[0]:
+                        min_price_card = rez
+                else:
+                    min_price_card = rez
+            elif rez[1] == 'discount_price':
+                if min_price_disc:
+                    if min_price_disc[0] > rez[0]:
+                        min_price_disc = rez
+                else:
+                    min_price_disc = rez
+            elif rez[1] == 'full_price':
+                if min_price_full:
+                    if min_price_full[0] > rez[0]:
+                        min_price_full = rez
+                else:
+                    min_price_full = rez
+        return [
+                {"min_price_card": list(min_price_card)},
+                {"min_price_disc": list(min_price_disc)},
+                {"min_price_full": list(min_price_full)}
+            ]
