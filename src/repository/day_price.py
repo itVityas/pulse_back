@@ -2,7 +2,7 @@ from typing import Optional, List
 from datetime import date as datetype
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, case
+from sqlalchemy import select, func, case, literal_column
 from sqlalchemy.orm import selectinload
 
 from model.tv import TV
@@ -20,7 +20,11 @@ class DayPriceData(BaseData):
     def __init__(self, session: AsyncSession):
         super().__init__(model=DayPrice, session=session)
 
-    async def get_by_shop_date(self, shop_id: int, date) -> Optional[List[DayPrice]]:
+    async def get_by_shop_date(
+                self,
+                shop_id: int,
+                date
+            ) -> Optional[List[DayPrice]]:
         slct = select(self.model).join(
                 self.model.shop_link
             ).options(
@@ -215,12 +219,14 @@ class DayPriceData(BaseData):
 
         change_persent = await self.get_change_price(
             date_start, date_end, diag_min, diag_max,
-            shops, brands, os, screen_resolutions, matrix_type, refresh_rate, currency
+            shops, brands, os, screen_resolutions,
+            matrix_type, refresh_rate, currency
         )
 
         return [
                 {"min_price": list(min_price)},
                 {"min_price_disc": list(min_price_disc)},
+                {"change_percent": change_persent}
             ]
 
     async def get_change_price(
@@ -243,6 +249,9 @@ class DayPriceData(BaseData):
             ShopLink.tv
         ).join(
             ShopLink.shop
+        ).where(
+            DayPrice.date >= date_start,
+            DayPrice.date <= date_end,
         )
 
         if shops:
@@ -304,8 +313,15 @@ class DayPriceData(BaseData):
                     (f_prices.c.date == dates_subq.c.max_d, f_prices.c.price)
                 )
             ).label('price_end')
-        ).select_from(f_prices)
+        ).select_from(
+            f_prices
+        ).join(
+            dates_subq, literal_column('true')
+        )
 
         result = await self.session.execute(final_slct)
         rez = result.fetchone()
-        print(rez)
+
+        if len(rez) == 2:
+            change = ((rez[1] - rez[0]) / rez[0]) * 100
+            return change
