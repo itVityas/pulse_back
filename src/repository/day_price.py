@@ -223,11 +223,23 @@ class DayPriceData(BaseData):
             matrix_type, refresh_rate, currency
         )
 
-        return [
-                {"min_price": list(min_price)},
-                {"min_price_disc": list(min_price_disc)},
-                {"change_percent": change_persent}
-            ]
+        min_price_dict = {}
+        if min_price:
+            min_price_dict['shop'] = min_price[2]
+            min_price_dict['price'] = min_price[0]
+            min_price_dict['name'] = min_price[1]
+
+        min_price_disc_dict = {}
+        if min_price_disc:
+            min_price_disc_dict['shop'] = min_price_disc[2]
+            min_price_disc_dict['price'] = min_price_disc[0]
+            min_price_disc_dict['name'] = min_price_disc[1]
+
+        return {
+                "min_price": min_price_dict,
+                "min_price_disc": min_price_disc_dict,
+                "change_percent": change_persent
+            }
 
     async def get_change_price(
         self,
