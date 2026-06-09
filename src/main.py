@@ -6,6 +6,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from settings.config import server_config, project_config
 from view.v1.v1 import v1_router
 from share.my_exception import MyHttpException
+from settings.loguru_conf import setup_logger
+from middleware.logs_middleware import LogMiddleware
+
+
+setup_logger()
 
 
 app = FastAPI(
@@ -21,6 +26,7 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["*"],
 )
+app.add_middleware(LogMiddleware)
 
 
 @app.exception_handler(MyHttpException)
