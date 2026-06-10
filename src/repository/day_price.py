@@ -337,3 +337,95 @@ class DayPriceData(BaseData):
         if len(rez) == 2:
             change = ((rez[1] - rez[0]) / rez[0]) * 100
             return change
+
+    async def get_models_min_price(
+        self,
+            date_start: datetype, date_end: datetype,
+            diag_min: Optional[int], diag_max: Optional[int],
+            shops: Optional[List[int]],
+            brands: Optional[List[int]],
+            os: Optional[List[int]],
+            screen_resolutions: Optional[List[int]],
+            matrix_type: Optional[List[int]],
+            refresh_rate: Optional[List[int]],
+            currency: str
+    ) -> Optional[dict]:
+        # need to handle currency
+        slct = select(
+            func.min(DayPrice.price),
+            DayPrice.name,
+            Shop.name,
+            TV.name,
+            ShopLink.link
+        ).join(
+            DayPrice.shop_link
+        ).join(
+            ShopLink.shop
+        ).join(
+            ShopLink.tv
+        ).where(
+            DayPrice.date >= date_start,
+            DayPrice.date <= date_end
+        )
+
+        if shops:
+            slct = slct.where(
+                Shop.name.in_(shops)
+            )
+        if brands:
+            slct = slct.join(
+                    TV.brand
+                ).where(
+                    Brand.name.in_(brands)
+                )
+        if matrix_type:
+            slct = slct.join(
+                TV.matrix_type
+            ).where(
+                MatrixType.name.in_(matrix_type)
+            )
+        if os:
+            slct = slct.join(
+                TV.os
+            ).where(
+                OS.name.in_(os)
+            )
+        if screen_resolutions:
+            slct = slct.join(
+                TV.screen_resolution
+            ).where(
+                ScreenResolution.name.in_(screen_resolutions)
+            )
+        if refresh_rate:
+            slct = slct.where(
+                TV.refresh_rate.in_(refresh_rate)
+            )
+        if diag_min:
+            slct = slct.where(
+                TV.diagonal >= diag_min
+            )
+        if diag_max:
+            slct = slct.where(
+                TV.diagonal <= diag_max
+            )
+        slct = slct.group_by(
+            DayPrice.name,
+            Shop.name,
+            TV.name,
+            ShopLink.link
+        )
+        result = await self.session.execute(slct)
+        res_list = result.all()
+
+        rez = dict()
+        for i in res_list:
+            if not rez.get(i[3]):
+                rez[i[3]] = []
+            rez[i[3]].append({
+                'price': i[0],
+                'name': i[1],
+                'shop': i[2],
+                'link': i[4]
+            })
+
+        return rez

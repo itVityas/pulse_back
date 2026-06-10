@@ -1,7 +1,9 @@
 from datetime import date
-from typing import Literal, List, Union
+from typing import Literal, List, Union, Optional
 
 from pydantic import BaseModel, RootModel
+
+from .pagination import PaginationSortParamsSchema
 
 
 class RangeDataSchema(BaseModel):
@@ -42,3 +44,22 @@ FilterItem = Union[DateRangeSchema, DiagonalSchema, ListDataSchema]
 
 class MainChartRequestSchema(RootModel):
     root: List[FilterItem]
+
+
+class MainChartTVMinPriceRequest(PaginationSortParamsSchema):
+    name: Optional[str] = None
+    name__ne: Optional[str] = None
+    name__icontains: Optional[str] = None
+    name__istartswith: Optional[str] = None
+    name__iendswith: Optional[str] = None
+
+
+class MainChartValuesTVMinPrice(BaseModel):
+    min_price: float
+    shop: str
+    link: str
+
+
+class MainChartTVMinPriceResponse(BaseModel):
+    name: str
+    values: List[MainChartValuesTVMinPrice]
