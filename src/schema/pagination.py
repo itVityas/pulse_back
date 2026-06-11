@@ -8,7 +8,7 @@ T = TypeVar('T')
 
 class PaginationParamsSchema(BaseModel):
     page: int = Field(default=1, ge=1, description='Номер страницы, начинается с 1')
-    page_size: int = Field(default=20, ge=0, le=100, description='Размер страницы, с 1 до 100')
+    page_size: int = Field(default=20, ge=-1, le=100, description='Размер страницы, с 1 до 100')
 
     @property
     def offset(self) -> int:
@@ -30,7 +30,7 @@ class PaginationParamsSchema(BaseModel):
 
 class PaginationSortParamsSchema(BaseModel):
     page: int = Field(default=1, ge=1, description='Номер страницы, начинается с 1')
-    page_size: int = Field(default=20, ge=0, le=100, description='Размер страницы, с 1 до 100')
+    page_size: int = Field(default=20, ge=-1, le=100, description='Размер страницы, с 1 до 100')
     sort_field: str = Field(default='id', description='Поле для сортировки')
     sort_order: str = Field(default='asc', description='Порядок сортировки: asc или desc')
 

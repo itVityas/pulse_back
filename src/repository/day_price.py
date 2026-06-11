@@ -440,7 +440,7 @@ class DayPriceData(BaseData):
         count_res = await self.session.execute(count_query)
         total = count_res.scalar_one()
 
-        if limit != 0:
+        if limit != -1:
             slct = slct.offset(skip).limit(limit)
 
         result = await self.session.execute(slct)
