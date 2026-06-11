@@ -413,6 +413,8 @@ class DayPriceData(BaseData):
             TV.name,
             ShopLink.link,
             TV.id
+        ).order_by(
+            TV.name
         )
         result = await self.session.execute(slct)
         res_list = result.all()
