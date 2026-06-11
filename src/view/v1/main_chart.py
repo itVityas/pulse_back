@@ -188,7 +188,8 @@ async def get_models_min_price(
         res_schema = list()
         for key, items in results.items():
             res_schema.append(MainChartTVMinPriceResponse(
-                name=key,
+                name=items[0].get('name'),
+                tv_id=items[0].get('tv_id'),
                 values=[
                     MainChartValuesTVMinPrice(
                         min_price=i.get('price'),

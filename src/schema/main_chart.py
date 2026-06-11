@@ -61,5 +61,6 @@ class MainChartValuesTVMinPrice(BaseModel):
 
 
 class MainChartTVMinPriceResponse(BaseModel):
+    tv_id: int
     name: str
     values: List[MainChartValuesTVMinPrice]

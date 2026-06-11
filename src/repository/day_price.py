@@ -353,10 +353,10 @@ class DayPriceData(BaseData):
         # need to handle currency
         slct = select(
             func.min(DayPrice.price),
-            DayPrice.name,
             Shop.name,
             TV.name,
-            ShopLink.link
+            ShopLink.link,
+            TV.id
         ).join(
             DayPrice.shop_link
         ).join(
@@ -409,23 +409,24 @@ class DayPriceData(BaseData):
                 TV.diagonal <= diag_max
             )
         slct = slct.group_by(
-            DayPrice.name,
             Shop.name,
             TV.name,
-            ShopLink.link
+            ShopLink.link,
+            TV.id
         )
         result = await self.session.execute(slct)
         res_list = result.all()
 
         rez = dict()
         for i in res_list:
-            if not rez.get(i[3]):
-                rez[i[3]] = []
-            rez[i[3]].append({
+            if not rez.get(i[4]):
+                rez[i[4]] = []
+            rez[i[4]].append({
                 'price': i[0],
-                'name': i[1],
-                'shop': i[2],
-                'link': i[4]
+                'name': i[2],
+                'shop': i[1],
+                'link': i[3],
+                'tv_id': i[4]
             })
 
         return rez
