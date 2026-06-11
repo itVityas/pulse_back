@@ -3,7 +3,7 @@ from typing import Literal, List, Union, Optional
 
 from pydantic import BaseModel, RootModel
 
-from .pagination import PaginationSortParamsSchema
+from .pagination import PaginationParamsSchema
 
 
 class RangeDataSchema(BaseModel):
@@ -46,8 +46,9 @@ class MainChartRequestSchema(RootModel):
     root: List[FilterItem]
 
 
-class MainChartTVMinPriceRequest(PaginationSortParamsSchema):
-    name: Optional[str] = None
+class MainChartTVMinPriceRequestPaginationSortSchema(PaginationParamsSchema):
+    root: List[FilterItem]
+    name__eq: Optional[str] = None
     name__ne: Optional[str] = None
     name__icontains: Optional[str] = None
     name__istartswith: Optional[str] = None

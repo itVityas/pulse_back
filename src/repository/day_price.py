@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Any, Dict
 from datetime import date as datetype
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -348,7 +348,10 @@ class DayPriceData(BaseData):
             screen_resolutions: Optional[List[int]],
             matrix_type: Optional[List[int]],
             refresh_rate: Optional[List[int]],
-            currency: str
+            currency: str,
+            skip: int = 0,
+            limit: int = 100,
+            filters: Optional[Dict[str, Any]] = None,
     ) -> Optional[dict]:
         # need to handle currency
         slct = select(
@@ -416,6 +419,30 @@ class DayPriceData(BaseData):
         ).order_by(
             TV.name
         )
+
+        if filters:
+            for field, value in filters.items():
+                if '__' in field and value is not None:
+                    field, operator = field.split('__')
+                    if field == 'name':
+                        if operator == 'eq':
+                            slct = slct.having(func.lower(TV.name) == func.lower(value))
+                        if operator == 'ne':
+                            slct = slct.having(func.lower(TV.name) != func.lower(value))
+                        if operator == 'icontains':
+                            slct = slct.having(func.lower(TV.name).contains(func.lower(value)))
+                        if operator == 'istartswith':
+                            slct = slct.having(func.lower(TV.name).startswith(func.lower(value)))
+                        if operator == 'iendswith':
+                            slct = slct.having(func.lower(TV.name).endswith(func.lower(value)))
+
+        count_query = select(func.count()).select_from(slct)
+        count_res = await self.session.execute(count_query)
+        total = count_res.scalar_one()
+
+        if limit != 0:
+            slct = slct.offset(skip).limit(limit)
+
         result = await self.session.execute(slct)
         res_list = result.all()
 
@@ -431,4 +458,4 @@ class DayPriceData(BaseData):
                 'tv_id': i[4]
             })
 
-        return rez
+        return rez, total
