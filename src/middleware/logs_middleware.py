@@ -14,6 +14,7 @@ class LogMiddleware(BaseHTTPMiddleware):
         method = request.method
         url = str(request.url)
         body_bytes = await request.body()
+        body_str = ""
         try:
             body_str = body_bytes.decode("utf-8") if body_bytes else ""
             body_str = json.loads(body_str)
