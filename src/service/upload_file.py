@@ -59,7 +59,6 @@ async def file_upload_handle(
                             continue
                         if column.find('технология экрана') != -1 or column.find('тип матрицы') != -1:
                             title_dict['matrix_type'] = indx
-                            print(indx)
                             continue
                         if column.find('бренд') != -1:
                             title_dict['brand'] = indx
@@ -105,7 +104,8 @@ async def file_upload_handle(
                         continue
                     if indx == 2:
                         name = str(cell)
-                        name = name.replace('"', '').replace("'", '').replace('`', '').replace('″', '').replace('’', '').replace('”', '').replace('`', '').replace('`', '')
+                        name = name.replace('"', '').replace("'", '').replace('`', '').replace('″', '').replace('’', '')
+                        name = name.replace('”', '').replace('`', '').replace('`', '')
                         continue
                     if indx == title_dict.get('description'):
                         description = str(cell)
@@ -119,8 +119,8 @@ async def file_upload_handle(
                         cell_str = cell_str.replace(' ', '').replace('дюйм', '"').replace('″', '"').replace('\'', '"').replace(';', '"').replace('’', '"').replace('(', '"').replace('”', '"')
                         try:
                             diagonal = int(float(cell_str.split('"')[0]))
-                        except Exception as ex:
-                            print(ex)
+                        except Exception:
+                            pass
                         continue
                     if indx == title_dict.get('refresh_rate'):
                         if cell is None:
@@ -128,7 +128,7 @@ async def file_upload_handle(
                         try:
                             refresh_rate = int(str(cell).lower().replace('hz', '').replace('гц', '').replace(' ', ''))
                         except Exception:
-                            print('refresh_rate:', str(cell))
+                            pass
                         continue
                     if indx == title_dict.get('color'):
                         color = str(cell)
@@ -208,19 +208,19 @@ async def file_upload_handle(
                         try:
                             full_price = float(str(cell).replace(' ', ''))
                         except Exception:
-                            print('full_price:', cell)
+                            pass
                         continue
                     if indx == title_dict.get('card_price'):
                         try:
                             card_price = float(str(cell).replace(' ', ''))
                         except Exception:
-                            print('card_price:', cell)
+                            pass
                         continue
                     if indx == title_dict.get('price'):
                         try:
                             price = float(str(cell).replace(' ', ''))
                         except Exception:
-                            print('price:', cell)
+                            pass
                         continue
 
                 if break_exit:
@@ -287,5 +287,4 @@ async def file_upload_handle(
 
                 line_count += 1
     except Exception as e:
-        print(e)
         raise e
