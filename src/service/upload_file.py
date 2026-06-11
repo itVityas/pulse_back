@@ -105,7 +105,7 @@ async def file_upload_handle(
                         continue
                     if indx == 2:
                         name = str(cell)
-                        name = name.replace('"', '').replace("'", '').replace('`', '').replace('″', '').replace('’', '').replace('”', '')
+                        name = name.replace('"', '').replace("'", '').replace('`', '').replace('″', '').replace('’', '').replace('”', '').replace('`','')
                         continue
                     if indx == title_dict.get('description'):
                         description = str(cell)
