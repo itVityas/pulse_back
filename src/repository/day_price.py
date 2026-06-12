@@ -145,6 +145,7 @@ class DayPriceData(BaseData):
         screen_resolutions: Optional[List[int]],
         matrix_type: Optional[List[int]],
         refresh_rate: Optional[List[int]],
+        tv_ids: Optional[List[int]],
         currency: str
     ) -> list:
         slct = select(
@@ -162,46 +163,52 @@ class DayPriceData(BaseData):
             DayPrice.date <= date_end
         )
 
-        if shops:
+        if tv_ids:
             slct = slct.where(
-                Shop.name.in_(shops)
+                TV.id.in_(tv_ids)
             )
-        if brands:
-            slct = slct.join(
-                    TV.brand
-                ).where(
-                    Brand.name.in_(brands)
+        else:
+            if shops:
+                slct = slct.where(
+                    Shop.name.in_(shops)
                 )
-        if matrix_type:
-            slct = slct.join(
-                TV.matrix_type
-            ).where(
-                MatrixType.name.in_(matrix_type)
-            )
-        if os:
-            slct = slct.join(
-                TV.os
-            ).where(
-                OS.name.in_(os)
-            )
-        if screen_resolutions:
-            slct = slct.join(
-                TV.screen_resolution
-            ).where(
-                ScreenResolution.name.in_(screen_resolutions)
-            )
-        if refresh_rate:
-            slct = slct.where(
-                TV.refresh_rate.in_(refresh_rate)
-            )
-        if diag_min:
-            slct = slct.where(
-                TV.diagonal >= diag_min
-            )
-        if diag_max:
-            slct = slct.where(
-                TV.diagonal <= diag_max
-            )
+            if brands:
+                slct = slct.join(
+                        TV.brand
+                    ).where(
+                        Brand.name.in_(brands)
+                    )
+            if matrix_type:
+                slct = slct.join(
+                    TV.matrix_type
+                ).where(
+                    MatrixType.name.in_(matrix_type)
+                )
+            if os:
+                slct = slct.join(
+                    TV.os
+                ).where(
+                    OS.name.in_(os)
+                )
+            if screen_resolutions:
+                slct = slct.join(
+                    TV.screen_resolution
+                ).where(
+                    ScreenResolution.name.in_(screen_resolutions)
+                )
+            if refresh_rate:
+                slct = slct.where(
+                    TV.refresh_rate.in_(refresh_rate)
+                )
+            if diag_min:
+                slct = slct.where(
+                    TV.diagonal >= diag_min
+                )
+            if diag_max:
+                slct = slct.where(
+                    TV.diagonal <= diag_max
+                )
+
         slct = slct.group_by(
             DayPrice.name,
             Shop.name,
