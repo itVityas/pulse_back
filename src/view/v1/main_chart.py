@@ -29,6 +29,7 @@ async def get_main_chart(
         currency = None
         diag_min = None
         diag_max = None
+        tv_ids = None
         for item in chart.root:
             if item.field == "date_range":
                 date_start = item.data.start
@@ -50,6 +51,8 @@ async def get_main_chart(
                 refresh_rate = item.data
             elif item.field == 'currency':
                 currency = item.data
+            elif item.field == 'tv_ids':
+                tv_ids = item.data
 
         results = await DayPriceData(session=session).get_for_main_chart(
             date_start=date_start,
@@ -62,6 +65,7 @@ async def get_main_chart(
             screen_resolutions=screen_resolutions,
             matrix_type=matrix_types,
             refresh_rate=refresh_rate,
+            tv_ids=tv_ids,
             currency=currency
         )
 

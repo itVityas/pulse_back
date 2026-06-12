@@ -26,6 +26,11 @@ class DiagonalSchema(BaseModel):
     data: MinMaxDataSchema
 
 
+class TVIdsSchema(BaseModel):
+    field: Literal['tv_ids']
+    data: List[int]
+
+
 class ListDataSchema(BaseModel):
     field: Literal[
         "shops",
@@ -39,7 +44,7 @@ class ListDataSchema(BaseModel):
     data: List[Union[str, int]]
 
 
-FilterItem = Union[DateRangeSchema, DiagonalSchema, ListDataSchema]
+FilterItem = Union[DateRangeSchema, DiagonalSchema, ListDataSchema, TVIdsSchema]
 
 
 class MainChartRequestSchema(RootModel):
