@@ -36,6 +36,13 @@ async def get_main_filters(session=Depends(get_session)):
                 'type': 'checkbox'
             })
 
+        rez_dict.append({
+            'title': 'Диагональ',
+            'search_name': 'diagonal',
+            'values': {'min': 24, 'max': 110},
+            'type': 'range'
+        })
+
         os_obj, _ = await OSData(session).get_multi(limit=-1)
         buf_os = [os.name for os in os_obj]
         rez_dict.append({
@@ -68,13 +75,6 @@ async def get_main_filters(session=Depends(get_session)):
             'search_name': 'refresh_rate',
             'values': [50, 60, 120, 144],
             'type': 'radiobutton'
-        })
-
-        rez_dict.append({
-            'title': 'Диагональ',
-            'search_name': 'diagonal',
-            'values': {'min': 24, 'max': 110},
-            'type': 'range'
         })
 
         currency_obj, _ = await CurrencyData(session).get_multi(limit=-1)
