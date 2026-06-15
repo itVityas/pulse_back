@@ -43,6 +43,15 @@ async def get_main_filters(session=Depends(get_session)):
             'type': 'range'
         })
 
+        currency_obj, _ = await CurrencyData(session).get_multi(limit=-1)
+        buf_currency = [currency.name for currency in currency_obj]
+        rez_dict.append({
+                'title': 'Валюта',
+                'search_name': 'currency',
+                'values': buf_currency,
+                'type': 'radiobutton'
+            })
+
         os_obj, _ = await OSData(session).get_multi(limit=-1)
         buf_os = [os.name for os in os_obj]
         rez_dict.append({
@@ -76,15 +85,6 @@ async def get_main_filters(session=Depends(get_session)):
             'values': [50, 60, 120, 144],
             'type': 'radiobutton'
         })
-
-        currency_obj, _ = await CurrencyData(session).get_multi(limit=-1)
-        buf_currency = [currency.name for currency in currency_obj]
-        rez_dict.append({
-                'title': 'Валюта',
-                'search_name': 'currency',
-                'values': buf_currency,
-                'type': 'radiobutton'
-            })
 
         return rez_dict
     except MyHttpException:
