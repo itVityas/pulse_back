@@ -348,9 +348,13 @@ class DayPriceData(BaseData):
         result = await self.session.execute(final_slct)
         rez = result.fetchone()
 
-        if len(rez) == 2:
-            change = ((rez[1] - rez[0]) / rez[0]) * 100
-            return change
+        try:
+            if len(rez) == 2:
+                change = ((rez[1] - rez[0]) / rez[0]) * 100
+                return float('{:.3f}'.format(change))
+        except Exception:
+            pass
+        return 0
 
     async def get_models_min_price(
         self,
