@@ -366,6 +366,7 @@ class DayPriceData(BaseData):
             screen_resolutions: Optional[List[int]],
             matrix_type: Optional[List[int]],
             refresh_rate: Optional[List[int]],
+            tv_ids: Optional[List[int]],
             currency: str,
             skip: int = 0,
             limit: int = 100,
@@ -388,6 +389,21 @@ class DayPriceData(BaseData):
             DayPrice.date >= date_start,
             DayPrice.date <= date_end
         )
+
+        select_tvs = None
+        if tv_ids:
+            tv_ids_select = slct.where(
+                TV.id.in_(tv_ids)
+            ).group_by(
+                Shop.name,
+                TV.name,
+                ShopLink.link,
+                TV.id
+            ).order_by(
+                TV.name
+            )
+            select_tvs = await self.session.execute(tv_ids_select)
+            select_tvs = select_tvs.all()
 
         if shops:
             slct = slct.where(
@@ -465,6 +481,18 @@ class DayPriceData(BaseData):
         res_list = result.all()
 
         rez = dict()
+        if select_tvs:
+            for i in select_tvs:
+                if not rez.get(i[4]):
+                    rez[i[4]] = []
+                rez[i[4]].append({
+                    'price': i[0],
+                    'name': i[2],
+                    'shop': i[1],
+                    'link': i[3],
+                    'tv_id': i[4]
+                })
+
         for i in res_list:
             if not rez.get(i[4]):
                 rez[i[4]] = []
