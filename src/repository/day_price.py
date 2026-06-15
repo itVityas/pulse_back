@@ -454,6 +454,11 @@ class DayPriceData(BaseData):
             TV.name
         )
 
+        if select_tvs:
+            slct = slct.where(
+                TV.id.not_in(tv_ids)
+            )
+
         if filters:
             for field, value in filters.items():
                 if '__' in field and value is not None:
