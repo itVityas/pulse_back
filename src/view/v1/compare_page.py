@@ -12,7 +12,7 @@ from schema.main_chart import MainChartRequestSchema
 router = APIRouter(prefix='/compare', tags=['Compare'])
 
 
-@router.get('/compare_price/', status_code=status.HTTP_200_OK, response_model=List[CompareResponseSchema])
+@router.post('/compare_price/', status_code=status.HTTP_200_OK, response_model=List[CompareResponseSchema])
 async def get_compare_price(
             chart: MainChartRequestSchema,
             session=Depends(get_session)
