@@ -510,3 +510,62 @@ class DayPriceData(BaseData):
             })
 
         return rez, total
+
+    async def get_compare_price_table(
+                self,
+                date_start: datetype,
+                date_end: datetype,
+            ) -> Optional[dict]:
+        subq = select(
+            DayPrice.name.label('product_name'),
+            DayPrice.price.label('product_price'),
+            DayPrice.date.label('product_date'),
+            Shop.name.label('shop_name'),
+            Shop.url.label('shop_url'),
+            func.first_value(DayPrice.price).over(
+                partition_by=[DayPrice.name, Shop.name],
+                order_by=DayPrice.date.asc()
+            ).label('price_start'),
+            func.first_value(DayPrice.price).over(
+                partition_by=[DayPrice.name, Shop.name],
+                order_by=DayPrice.date.desc()
+            ).label('price_end')
+        ).join(
+            DayPrice.shop_link
+        ).join(
+            ShopLink.shop
+        ).where(
+            DayPrice.date >= date_start,
+            DayPrice.date <= date_end,
+        ).subquery()
+
+        slct = select(
+            subq.c.product_name,
+            subq.c.shop_name,
+            subq.c.shop_url,
+            func.min(subq.c.product_price).label('min_price'),
+            func.min(subq.c.price_start).label('price_start'),
+            func.min(subq.c.price_end).label('price_end')
+        ).group_by(
+            subq.c.product_name,
+            subq.c.shop_name,
+            subq.c.shop_url,
+        ).order_by(
+            subq.c.product_name
+        )
+
+        result = await self.session.execute(slct)
+        res_list = result.all()
+
+        rez = {}
+        for i in res_list:
+            if not rez.get(i[1]):
+                rez[i[1]] = {'prices': list()}
+            rez[i[1]]['shop_name'] = i[1]
+            rez[i[1]]['link'] = i[2]
+            rez[i[1]]['prices'].append({
+                'name': i[0],
+                'price': i[3]
+            })
+            rez[i[1]]['alter_percentage'] = float('{:.3f}'.format(((i[5] - i[4]) / i[4]) * 100))
+        return rez.values()

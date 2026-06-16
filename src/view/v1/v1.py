@@ -14,6 +14,7 @@ from view.v1.day_price import router as day_price_router
 from view.v1.file_upload import router as file_upload_router
 from view.v1.filters import router as filters_router
 from view.v1.main_chart import router as main_chart_router
+from view.v1.compare_page import router as compare_router
 
 
 v1_router = APIRouter()
@@ -31,3 +32,4 @@ v1_router.include_router(day_price_router)
 v1_router.include_router(file_upload_router)
 v1_router.include_router(filters_router)
 v1_router.include_router(main_chart_router)
+v1_router.include_router(compare_router)
