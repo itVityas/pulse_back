@@ -684,14 +684,11 @@ class DayPriceData(BaseData):
                     pers = ((rez_pers[1] - rez_pers[0]) / rez_pers[0]) * 100
 
                 rez[i[2]] = {
-                    'prices': list(),
+                    'prices': dict(),
                     'alter_percentage': float('{:.3f}'.format(pers))
                 }
             rez[i[2]]['shop_name'] = i[2]
             rez[i[2]]['link'] = i[3]
-            rez[i[2]]['prices'].append({
-                'name': i[1],
-                'price': i[0]
-            })
+            rez[i[2]]['prices'][i[1]] = i[0]
 
         return rez.values()

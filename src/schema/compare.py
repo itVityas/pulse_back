@@ -1,14 +1,16 @@
+from typing import Optional
+
 from pydantic import BaseModel
-from typing import List
 
 
 class PricePartSchema(BaseModel):
-    name: str
-    price: float
+    card_price: Optional[float] = None
+    discount_price: Optional[float] = None
+    full_price: Optional[float] = None
 
 
 class CompareResponseSchema(BaseModel):
     shop_name: str
-    prices: List[PricePartSchema]
+    prices: PricePartSchema
     alter_percentage: float
     link: str
