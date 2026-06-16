@@ -1,12 +1,5 @@
-from datetime import date
-
 from pydantic import BaseModel
 from typing import List
-
-
-class CompareRequestSchema(BaseModel):
-    date_start: date
-    date_end: date
 
 
 class PricePartSchema(BaseModel):

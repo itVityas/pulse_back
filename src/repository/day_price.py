@@ -515,21 +515,36 @@ class DayPriceData(BaseData):
                 self,
                 date_start: datetype,
                 date_end: datetype,
+                diag_min: Optional[int],
+                diag_max: Optional[int],
+                shops: Optional[List[int]],
+                brands: Optional[List[int]],
+                os: Optional[List[int]],
+                screen_resolutions: Optional[List[int]],
+                matrix_type: Optional[List[int]],
+                refresh_rate: Optional[List[int]],
+                tv_ids: Optional[List[int]],
+                currency: str
             ) -> Optional[dict]:
-        subq = select(
-            DayPrice.name.label('product_name'),
-            DayPrice.price.label('product_price'),
-            DayPrice.date.label('product_date'),
-            Shop.name.label('shop_name'),
-            Shop.url.label('shop_url'),
-            func.first_value(DayPrice.price).over(
-                partition_by=[DayPrice.name, Shop.name],
-                order_by=DayPrice.date.asc()
-            ).label('price_start'),
-            func.first_value(DayPrice.price).over(
-                partition_by=[DayPrice.name, Shop.name],
-                order_by=DayPrice.date.desc()
-            ).label('price_end')
+
+        slct = select(
+            func.min(DayPrice.price),
+            DayPrice.name,
+            Shop.name,
+            Shop.url
+        ).join(
+            DayPrice.shop_link
+        ).join(
+            ShopLink.tv
+        ).join(
+            ShopLink.shop
+        ).where(
+            DayPrice.date >= date_start,
+            DayPrice.date <= date_end,
+        )
+        base_slct = select(
+            DayPrice.price,
+            DayPrice.date
         ).join(
             DayPrice.shop_link
         ).join(
@@ -537,21 +552,95 @@ class DayPriceData(BaseData):
         ).where(
             DayPrice.date >= date_start,
             DayPrice.date <= date_end,
-        ).subquery()
+        )
 
-        slct = select(
-            subq.c.product_name,
-            subq.c.shop_name,
-            subq.c.shop_url,
-            func.min(subq.c.product_price).label('min_price'),
-            func.min(subq.c.price_start).label('price_start'),
-            func.min(subq.c.price_end).label('price_end')
-        ).group_by(
-            subq.c.product_name,
-            subq.c.shop_name,
-            subq.c.shop_url,
+        if tv_ids:
+            slct = slct.where(
+                TV.id.in_(tv_ids)
+            )
+            base_slct = base_slct.where(
+                TV.id.in_(tv_ids)
+            )
+        else:
+            if shops:
+                slct = slct.where(
+                    Shop.name.in_(shops)
+                )
+                base_slct = base_slct.where(
+                    Shop.name.in_(shops)
+                )
+            if brands:
+                slct = slct.join(
+                        TV.brand
+                    ).where(
+                        Brand.name.in_(brands)
+                    )
+                base_slct = base_slct.join(
+                        TV.brand
+                    ).where(
+                        Brand.name.in_(brands)
+                    )
+            if matrix_type:
+                slct = slct.join(
+                    TV.matrix_type
+                ).where(
+                    MatrixType.name.in_(matrix_type)
+                )
+                base_slct = base_slct.join(
+                    TV.matrix_type
+                ).where(
+                    MatrixType.name.in_(matrix_type)
+                )
+            if os:
+                slct = slct.join(
+                    TV.os
+                ).where(
+                    OS.name.in_(os)
+                )
+                base_slct = base_slct.join(
+                    TV.os
+                ).where(
+                    OS.name.in_(os)
+                )
+            if screen_resolutions:
+                slct = slct.join(
+                    TV.screen_resolution
+                ).where(
+                    ScreenResolution.name.in_(screen_resolutions)
+                )
+                base_slct = base_slct.join(
+                    TV.screen_resolution
+                ).where(
+                    ScreenResolution.name.in_(screen_resolutions)
+                )
+            if refresh_rate:
+                slct = slct.where(
+                    TV.refresh_rate.in_(refresh_rate)
+                )
+                base_slct = base_slct.where(
+                    TV.refresh_rate.in_(refresh_rate)
+                )
+            if diag_min:
+                slct = slct.where(
+                    TV.diagonal >= diag_min
+                )
+                base_slct = base_slct.where(
+                    TV.diagonal >= diag_min
+                )
+            if diag_max:
+                slct = slct.where(
+                    TV.diagonal <= diag_max
+                )
+                base_slct = base_slct.where(
+                    TV.diagonal <= diag_max
+                )
+
+        slct = slct.group_by(
+            DayPrice.name,
+            Shop.name,
+            Shop.url
         ).order_by(
-            subq.c.product_name
+            DayPrice.name
         )
 
         result = await self.session.execute(slct)
@@ -559,13 +648,50 @@ class DayPriceData(BaseData):
 
         rez = {}
         for i in res_list:
-            if not rez.get(i[1]):
-                rez[i[1]] = {'prices': list()}
-            rez[i[1]]['shop_name'] = i[1]
-            rez[i[1]]['link'] = i[2]
-            rez[i[1]]['prices'].append({
-                'name': i[0],
-                'price': i[3]
+            if not rez.get(i[2]):
+                base_slct2 = base_slct.where(
+                    Shop.name == i[2]
+                )
+                f_prices = base_slct2.cte('filtered_prices')
+
+                dates_subq = select(
+                    func.min(f_prices.c.date).label('min_d'),
+                    func.max(f_prices.c.date).label('max_d')
+                ).subquery()
+
+                final_slct = select(
+                    func.min(
+                        case(
+                            (f_prices.c.date == dates_subq.c.min_d, f_prices.c.price)
+                        )
+                    ).label('price_start'),
+                    func.min(
+                        case(
+                            (f_prices.c.date == dates_subq.c.max_d, f_prices.c.price)
+                        )
+                    ).label('price_end')
+                ).select_from(
+                    f_prices
+                ).join(
+                    dates_subq, literal_column('true')
+                )
+
+                result = await self.session.execute(final_slct)
+                rez_pers = result.fetchone()
+
+                pers = 0.0
+                if len(rez_pers) == 2 and rez_pers[0] and rez_pers[1]:
+                    pers = ((rez_pers[1] - rez_pers[0]) / rez_pers[0]) * 100
+
+                rez[i[2]] = {
+                    'prices': list(),
+                    'alter_percentage': float('{:.3f}'.format(pers))
+                }
+            rez[i[2]]['shop_name'] = i[2]
+            rez[i[2]]['link'] = i[3]
+            rez[i[2]]['prices'].append({
+                'name': i[1],
+                'price': i[0]
             })
-            rez[i[1]]['alter_percentage'] = float('{:.3f}'.format(((i[5] - i[4]) / i[4]) * 100))
+
         return rez.values()
