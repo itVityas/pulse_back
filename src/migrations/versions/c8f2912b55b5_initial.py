@@ -1,8 +1,8 @@
-"""init
+"""initial
 
-Revision ID: 82ee9c198bc0
+Revision ID: c8f2912b55b5
 Revises:
-Create Date: 2026-05-29 10:06:57.050001
+Create Date: 2026-06-18 20:29:35.082161
 
 """
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = "82ee9c198bc0"
+revision: str = "c8f2912b55b5"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -87,9 +87,10 @@ def upgrade() -> None:
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("username"),
     )
     op.create_index(op.f("ix_users_id"), "users", ["id"], unique=False)
+    op.create_index(op.f("ix_users_is_active"), "users", ["is_active"], unique=False)
+    op.create_index(op.f("ix_users_username"), "users", ["username"], unique=True)
     op.create_table(
         "exchange_rate",
         sa.Column("date", sa.Date(), nullable=False),
@@ -112,9 +113,48 @@ def upgrade() -> None:
         ),
     )
     op.create_index(
+        op.f("ix_exchange_rate_base_currency_id"),
+        "exchange_rate",
+        ["base_currency_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_exchange_rate_currency_id"),
+        "exchange_rate",
+        ["currency_id"],
+        unique=False,
+    )
+    op.create_index(
         op.f("ix_exchange_rate_date"), "exchange_rate", ["date"], unique=False
     )
     op.create_index(op.f("ix_exchange_rate_id"), "exchange_rate", ["id"], unique=False)
+    op.create_table(
+        "file_upload",
+        sa.Column("name", sa.String(length=150), nullable=False),
+        sa.Column("size", sa.Integer(), nullable=False),
+        sa.Column("date", sa.Date(), nullable=False),
+        sa.Column("currency_id", sa.Integer(), nullable=False),
+        sa.Column("shop_id", sa.Integer(), nullable=False),
+        sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
+        sa.Column("created_at", sa.DateTime(), nullable=False),
+        sa.Column("updated_at", sa.DateTime(), nullable=False),
+        sa.ForeignKeyConstraint(
+            ["currency_id"],
+            ["currency.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["shop_id"],
+            ["shop.id"],
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_index(
+        op.f("ix_file_upload_currency_id"), "file_upload", ["currency_id"], unique=False
+    )
+    op.create_index(op.f("ix_file_upload_id"), "file_upload", ["id"], unique=False)
+    op.create_index(
+        op.f("ix_file_upload_shop_id"), "file_upload", ["shop_id"], unique=False
+    )
     op.create_table(
         "refresh_token",
         sa.Column("token", sa.String(length=500), nullable=False),
@@ -134,7 +174,7 @@ def upgrade() -> None:
     )
     op.create_table(
         "tv",
-        sa.Column("name", sa.String(length=250), nullable=False),
+        sa.Column("name", sa.Text(), nullable=False),
         sa.Column("os_id", sa.Integer(), nullable=True),
         sa.Column("screen_resolution_id", sa.Integer(), nullable=True),
         sa.Column("brand_id", sa.Integer(), nullable=True),
@@ -161,9 +201,19 @@ def upgrade() -> None:
             ["screen_resolution.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("name"),
     )
+    op.create_index(op.f("ix_tv_brand_id"), "tv", ["brand_id"], unique=False)
+    op.create_index(op.f("ix_tv_diagonal"), "tv", ["diagonal"], unique=False)
     op.create_index(op.f("ix_tv_id"), "tv", ["id"], unique=False)
+    op.create_index(
+        op.f("ix_tv_matrix_type_id"), "tv", ["matrix_type_id"], unique=False
+    )
+    op.create_index(op.f("ix_tv_name"), "tv", ["name"], unique=True)
+    op.create_index(op.f("ix_tv_os_id"), "tv", ["os_id"], unique=False)
+    op.create_index(op.f("ix_tv_refresh_rate"), "tv", ["refresh_rate"], unique=False)
+    op.create_index(
+        op.f("ix_tv_screen_resolution_id"), "tv", ["screen_resolution_id"], unique=False
+    )
     op.create_table(
         "shop_link",
         sa.Column("shop_id", sa.Integer(), nullable=False),
@@ -184,6 +234,13 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(op.f("ix_shop_link_id"), "shop_link", ["id"], unique=False)
+    op.create_index(
+        op.f("ix_shop_link_is_active"), "shop_link", ["is_active"], unique=False
+    )
+    op.create_index(
+        op.f("ix_shop_link_shop_id"), "shop_link", ["shop_id"], unique=False
+    )
+    op.create_index(op.f("ix_shop_link_tv_id"), "shop_link", ["tv_id"], unique=False)
     op.create_table(
         "day_price",
         sa.Column("shop_link_id", sa.Integer(), nullable=False),
@@ -191,10 +248,15 @@ def upgrade() -> None:
         sa.Column("price", sa.Float(), nullable=False),
         sa.Column("name", sa.String(), nullable=False),
         sa.Column("date", sa.Date(), nullable=False),
+        sa.Column("file_upload_id", sa.Integer(), nullable=True),
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.ForeignKeyConstraint(
             ["currency_id"],
             ["currency.id"],
+        ),
+        sa.ForeignKeyConstraint(
+            ["file_upload_id"],
+            ["file_upload.id"],
         ),
         sa.ForeignKeyConstraint(
             ["shop_link_id"],
@@ -202,24 +264,59 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint("id"),
     )
+    op.create_index(
+        op.f("ix_day_price_currency_id"), "day_price", ["currency_id"], unique=False
+    )
+    op.create_index(op.f("ix_day_price_date"), "day_price", ["date"], unique=False)
+    op.create_index(
+        op.f("ix_day_price_file_upload_id"),
+        "day_price",
+        ["file_upload_id"],
+        unique=False,
+    )
     op.create_index(op.f("ix_day_price_id"), "day_price", ["id"], unique=False)
+    op.create_index(
+        op.f("ix_day_price_shop_link_id"), "day_price", ["shop_link_id"], unique=False
+    )
     # ### end Alembic commands ###
 
 
 def downgrade() -> None:
     # ### commands auto generated by Alembic - please adjust! ###
+    op.drop_index(op.f("ix_day_price_shop_link_id"), table_name="day_price")
     op.drop_index(op.f("ix_day_price_id"), table_name="day_price")
+    op.drop_index(op.f("ix_day_price_file_upload_id"), table_name="day_price")
+    op.drop_index(op.f("ix_day_price_date"), table_name="day_price")
+    op.drop_index(op.f("ix_day_price_currency_id"), table_name="day_price")
     op.drop_table("day_price")
+    op.drop_index(op.f("ix_shop_link_tv_id"), table_name="shop_link")
+    op.drop_index(op.f("ix_shop_link_shop_id"), table_name="shop_link")
+    op.drop_index(op.f("ix_shop_link_is_active"), table_name="shop_link")
     op.drop_index(op.f("ix_shop_link_id"), table_name="shop_link")
     op.drop_table("shop_link")
+    op.drop_index(op.f("ix_tv_screen_resolution_id"), table_name="tv")
+    op.drop_index(op.f("ix_tv_refresh_rate"), table_name="tv")
+    op.drop_index(op.f("ix_tv_os_id"), table_name="tv")
+    op.drop_index(op.f("ix_tv_name"), table_name="tv")
+    op.drop_index(op.f("ix_tv_matrix_type_id"), table_name="tv")
     op.drop_index(op.f("ix_tv_id"), table_name="tv")
+    op.drop_index(op.f("ix_tv_diagonal"), table_name="tv")
+    op.drop_index(op.f("ix_tv_brand_id"), table_name="tv")
     op.drop_table("tv")
     op.drop_index(op.f("ix_refresh_token_token"), table_name="refresh_token")
     op.drop_index(op.f("ix_refresh_token_id"), table_name="refresh_token")
     op.drop_table("refresh_token")
+    op.drop_index(op.f("ix_file_upload_shop_id"), table_name="file_upload")
+    op.drop_index(op.f("ix_file_upload_id"), table_name="file_upload")
+    op.drop_index(op.f("ix_file_upload_currency_id"), table_name="file_upload")
+    op.drop_table("file_upload")
     op.drop_index(op.f("ix_exchange_rate_id"), table_name="exchange_rate")
     op.drop_index(op.f("ix_exchange_rate_date"), table_name="exchange_rate")
+    op.drop_index(op.f("ix_exchange_rate_currency_id"), table_name="exchange_rate")
+    op.drop_index(op.f("ix_exchange_rate_base_currency_id"), table_name="exchange_rate")
     op.drop_table("exchange_rate")
+    op.drop_index(op.f("ix_users_username"), table_name="users")
+    op.drop_index(op.f("ix_users_is_active"), table_name="users")
     op.drop_index(op.f("ix_users_id"), table_name="users")
     op.drop_table("users")
     op.drop_index(op.f("ix_shop_name"), table_name="shop")

@@ -20,6 +20,7 @@ from src.model.currency import Currency
 from src.model.day_price import DayPrice
 from src.model.exchange_rate import ExchangeRate
 from src.model.refresh_token import RefreshToken
+from src.model.file import FileUpload
 
 
 # this is the Alembic Config object, which provides

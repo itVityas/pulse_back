@@ -20,16 +20,28 @@ from repository.shop_link import ShopLinkData
 from model.shop_link import ShopLink
 from model.day_price import DayPrice
 from repository.day_price import DayPriceData
+from model.file import FileUpload
+from repository.file import FileUploadData
 
 
 async def file_upload_handle(
         file, currency_id: int, shop_id: int,
-        date: idate, session: AsyncSession):
+        date: idate, session: AsyncSession,
+        file_size: int, filename: str):
     try:
         currency = await CurrencyData(session).get_one(currency_id)
         shop = await ShopData(session).get_one(shop_id)
         if not currency or not shop:
             raise Exception('shop or currency not exist')
+
+        file_obj = FileUpload(
+            name=filename,
+            size=file_size,
+            currency_id=currency_id,
+            date=date,
+            shop_id=shop_id)
+        file_obj = await FileUploadData(session).create_by_model(file_obj)
+
         wb = load_workbook(file)
         for sheet in wb.worksheets:
             title = sheet.title.lower()
@@ -263,7 +275,8 @@ async def file_upload_handle(
                             price=card_price,
                             name='card_price',
                             currency_id=currency_id,
-                            date=date
+                            date=date,
+                            file_upload_id=file_obj.id
                         )
                     await DayPriceData(session).create_by_model(day_price_model)
                 if full_price != 0:
@@ -272,7 +285,8 @@ async def file_upload_handle(
                             price=full_price,
                             name='full_price',
                             currency_id=currency_id,
-                            date=date
+                            date=date,
+                            file_upload_id=file_obj.id
                         )
                     await DayPriceData(session).create_by_model(day_price_model)
                 if price != 0:
@@ -281,7 +295,8 @@ async def file_upload_handle(
                             price=price,
                             name='discount_price',
                             currency_id=currency_id,
-                            date=date
+                            date=date,
+                            file_upload_id=file_obj.id
                         )
                     await DayPriceData(session).create_by_model(day_price_model)
 

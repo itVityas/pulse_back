@@ -39,7 +39,9 @@ async def file_upload(
             file_stream,
             parameters.currency_id,
             parameters.shop_id,
-            parameters.date, session)
+            parameters.date, session,
+            file_size=len(contents),
+            filename=file.filename)
         return {"filename": file.filename}
     except MyHttpException:
         raise
