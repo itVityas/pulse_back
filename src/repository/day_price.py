@@ -531,7 +531,7 @@ class DayPriceData(BaseData):
             func.min(DayPrice.price),
             DayPrice.name,
             Shop.name,
-            Shop.url
+            ShopLink.link
         ).join(
             DayPrice.shop_link
         ).join(
@@ -638,7 +638,7 @@ class DayPriceData(BaseData):
         slct = slct.group_by(
             DayPrice.name,
             Shop.name,
-            Shop.url
+            ShopLink.link
         ).order_by(
             DayPrice.name
         )
@@ -690,5 +690,6 @@ class DayPriceData(BaseData):
             rez[i[2]]['shop_name'] = i[2]
             rez[i[2]]['link'] = i[3]
             rez[i[2]]['prices'][i[1]] = i[0]
+            rez[i[2]]['min_price'] = min(rez[i[2]]['prices'].values())
 
         return rez.values()

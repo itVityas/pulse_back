@@ -13,4 +13,5 @@ class CompareResponseSchema(BaseModel):
     shop_name: str
     prices: PricePartSchema
     alter_percentage: float
+    min_price: float
     link: str
