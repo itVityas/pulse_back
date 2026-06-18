@@ -13,7 +13,7 @@ class ShopLink(BaseModel):
     tv_id: Mapped[int] = mapped_column(ForeignKey('tv.id'), nullable=False, index=True)
     tv = relationship('TV', back_populates='tv_shop_link')
     link: Mapped[str] = mapped_column(Text(), nullable=False)
-    is_active: Mapped[bool] = mapped_column(Boolean(), insert_default=True)
+    is_active: Mapped[bool] = mapped_column(Boolean(), insert_default=True, index=True)
     price_shop_link = relationship("DayPrice", back_populates='shop_link', cascade='all, delete-orphan')
 
     def __str__(self):

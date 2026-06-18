@@ -9,9 +9,9 @@ class User(BaseModel):
     """
     __tablename__ = "users"
 
-    username: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
+    username: Mapped[str] = mapped_column(String(50), nullable=False, unique=True, index=True)
     password: Mapped[str] = mapped_column(String(60), nullable=False)
-    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, index=True)
     is_admin: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     def __str__(self):

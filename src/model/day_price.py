@@ -26,6 +26,11 @@ class DayPrice(BaseModelOnlyId):
         insert_default=func.now(),
         nullable=False,
         index=True)
+    file_upload_id: Mapped[int] = mapped_column(
+        ForeignKey('file_upload.id'),
+        nullable=True,
+        index=True
+    )
 
     def __str__(self):
         return f'<DayPrice>: {self.id}'
