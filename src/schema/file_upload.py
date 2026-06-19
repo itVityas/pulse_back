@@ -16,6 +16,7 @@ class FileUploadSchema(BaseModel):
 class FileUploadModelResponseSchema(BaseModel):
     id: int
     name: str
+    size: int
     currency: CurrencyFullSchema
     shop: ShopSmallSchema
     date: idate
