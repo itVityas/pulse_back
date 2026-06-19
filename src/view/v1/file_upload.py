@@ -75,6 +75,12 @@ async def file_upload_get(
     Параметры фильтров:
     - Фильтр по id__eq: ?id=1
     - Фильтр по date: ?date__eq=2020-01-01
+    - Фильтр по названию файла: ?name__eq=filename
+    - Фильтр по названию файла (содержит): ?name__icontain=filename
+    - Фильтр по названию файла (начинается): ?name_istartswith=filename
+    - Фильтр по названию файла (заканчивается): ?name_iendswith=filename
+    - Фильтр по shop_id: ?shop_id__eq=1
+    - Фильтр по currency_id: ?currency_id__eq=1
     """
     try:
         eager_options = [
