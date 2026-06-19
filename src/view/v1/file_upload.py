@@ -106,3 +106,18 @@ async def file_upload_get(
                 detail=str(e),
                 title='Ошибка backend'
             )
+
+
+@router.delete('/delete/{id}/', status_code=status.HTTP_204_NO_CONTENT)
+async def file_upload_delete(id: int, session=Depends(get_session)):
+    try:
+        await FileUploadData(session).delete(id)
+        return {"detail": "Файл удален"}
+    except MyHttpException:
+        raise
+    except Exception as e:
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )
