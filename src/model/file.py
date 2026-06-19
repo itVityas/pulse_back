@@ -1,7 +1,7 @@
 from datetime import date as datetype
 
 from sqlalchemy import String, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import BaseModel
 
@@ -15,8 +15,10 @@ class FileUpload(BaseModel):
         ForeignKey('currency.id'),
         nullable=False,
         index=True)
+    currency = relationship("Currency")
     shop_id: Mapped[int] = mapped_column(
         ForeignKey('shop.id'),
         nullable=False,
         index=True
     )
+    shop = relationship("Shop")

@@ -1,12 +1,16 @@
 from io import BytesIO
 
 from fastapi import APIRouter, Depends, status, UploadFile, File
+from sqlalchemy.orm import selectinload
 
 from settings.database import get_session
-from schema.file_upload import FileUploadSchema
+from schema.file_upload import FileUploadSchema, FileUploadModelResponseSchema, FileUploadRequestSchema
 from service.upload_file import file_upload_handle
 from repository.day_price import DayPriceData
 from share.my_exception import MyHttpException
+from repository.file import FileUploadData
+from schema.pagination import PaginationResponseSchema
+from model.file import FileUpload
 
 
 router = APIRouter(prefix='/file_upload', tags=['FileUpload'])
@@ -43,6 +47,57 @@ async def file_upload(
             file_size=len(contents),
             filename=file.filename)
         return {"filename": file.filename}
+    except MyHttpException:
+        raise
+    except Exception as e:
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )
+
+
+@router.get('/get_file_list/', response_model=PaginationResponseSchema[FileUploadModelResponseSchema])
+async def file_upload_get(
+            filter_schema: FileUploadRequestSchema = Depends(),
+            session=Depends(get_session)
+        ):
+    """Получить список загруженных файлов
+    параметры пагинации:
+    - Страница: ?page=0
+    - Количество записей на странице: ?page_size=20
+
+    Параметры сортировки:
+    - Сортировка по ID: ?sort_field=поле сортировки
+      Пример сортировки по id: ?sort_field=id
+    - Порядок сортировка: ?sort_order=asc (увеличение) или desc (уменьшение)
+
+    Параметры фильтров:
+    - Фильтр по id__eq: ?id=1
+    - Фильтр по date: ?date__eq=2020-01-01
+    """
+    try:
+        eager_options = [
+            selectinload(FileUpload.shop),
+            selectinload(FileUpload.currency),
+        ]
+        tv_list, total = await FileUploadData(session).get_multi(
+            skip=filter_schema.offset,
+            limit=filter_schema.limit,
+            sort_field=filter_schema.sort_field,
+            sort_order=filter_schema.sort_order,
+            filters=filter_schema.filters,
+            eager_loads=eager_options,
+        )
+        file_upload_schemas = [FileUploadModelResponseSchema.model_validate(item) for item in tv_list]
+        pages = filter_schema.get_count_pages(total)
+        return PaginationResponseSchema[FileUploadModelResponseSchema](
+            items=file_upload_schemas,
+            total=total,
+            page=filter_schema.page,
+            size=filter_schema.page_size,
+            pages=pages,
+        )
     except MyHttpException:
         raise
     except Exception as e:
