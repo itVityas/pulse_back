@@ -1,0 +1,23 @@
+[
+    {
+        "name": "IPS"
+    },
+    {
+        "name": "VA"
+    },
+    {
+        "name": "OLED"
+    },
+    {
+        "name": "QLED"
+    },
+    {
+        "name": "TN"
+    },
+    {
+        "name": "DLED"
+    },
+    {
+        "name": "LED"
+    }
+]
