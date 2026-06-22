@@ -48,7 +48,7 @@ services:
   celery_currency:
     build: ./images/python
     container_name: celery_currency
-    command: sh -c "pip3 install --no-cache-dir --default-timeout=100 -r requirements.txt && sleep 1  && python3 -m celery -A src.celery.celery_app worker"
+    command: sh -c "pip3 install --no-cache-dir --default-timeout=100 -r requirements.txt && sleep 1  && cd src && python3 -m celery -A celery_app.celery_app worker"
     depends_on:
       redis:
         condition: service_healthy
@@ -61,7 +61,7 @@ services:
   celery_beat:
     build: ./images/python
     container_name: celery_beat
-    command: sh -c "pip3 install --no-cache-dir --default-timeout=100 -r requirements.txt && sleep 1  && python3 -m celery -A src.celery.celery_app beat"
+    command: sh -c "pip3 install --no-cache-dir --default-timeout=100 -r requirements.txt && sleep 1  && cd src && python3 -m celery -A celery_app.celery_app beat"
     depends_on:
       redis:
         condition: service_healthy
