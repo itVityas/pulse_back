@@ -4,7 +4,10 @@ from typing import List
 from dotenv import load_dotenv
 
 
-load_dotenv(dotenv_path='.env')
+if os.path.exists('.env'):
+    load_dotenv(dotenv_path='.env')
+else:
+    load_dotenv(dotenv_path='../.env')
 
 
 class DatabaseConfig:
