@@ -4,14 +4,16 @@ from celery.schedules import crontab
 
 celery_app = Celery(
     'worker',
-    broker='redis://localhost:6379/0',
-    backend='redis://localhost:6379/0'
+    broker='redis://redis:6379/0',
+    backend='redis://redis:6379/0'
 )
 
+celery_app.conf.imports = ('src.celery.tasks',)
+
 celery_app.conf.beat_schedule = {
-    'update-currency_rate': {
-        'task': 'tasks.update_currency_rates_task',
-        'schedule': crontab(minute='*/10')
+    'update-currency-rate': {
+        'task': 'src.celery.tasks.update_currency_rates_task',
+        'schedule': crontab(minute='*/1')
     }
 }
 
