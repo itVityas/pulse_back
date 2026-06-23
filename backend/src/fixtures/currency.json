@@ -1,17 +1,22 @@
 [
     {
-        "name": "USD"
+        "name": "USD",
+        "cur_id": 431
     },
     {
-        "name": "EUR"
+        "name": "EUR",
+        "cur_id": 451
     },
     {
-        "name": "BYN"
+        "name": "BYN",
+        "cur_id": 0
     },
     {
-        "name": "RUB"
+        "name": "RUB",
+        "cur_id": 456
     },
     {
-        "name": "CNY"
+        "name": "CNY",
+        "cur_id": 462
     }
 ]
