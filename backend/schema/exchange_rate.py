@@ -59,3 +59,8 @@ class ExchangeRateParamsSchema(PaginationSortParamsSchema):
 
 class UploadCurrencySchema(BaseModel):
     date: datetype
+
+
+class UploadRangeSchema(BaseModel):
+    date_start: datetype
+    date_end: datetype

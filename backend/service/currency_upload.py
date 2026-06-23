@@ -1,5 +1,6 @@
 import requests
 from datetime import date as datetype
+import datetime
 
 from repository.currency import CurrencyData
 from model.exchange_rate import ExchangeRate
@@ -47,26 +48,28 @@ async def get_currency_from_nbrb(session, date: datetype):
 
 async def get_currency_period_from_nbrb(session, date_start: datetype, date_end: datetype):
     try:
-        currensies = await CurrencyData(session).get_multi()
+        currensies, total = await CurrencyData(session).get_multi()
         for currency in currensies:
+            if currency.name == 'BYN':
+                continue
             json_data = requests.get(
                 nbrb_period_url + f'{currency.cur_id}?startDate={date_start}&endDate={date_end}'
             ).json()
             if json_data:
                 for line in json_data:
-                    if await ExchangeRateData(session).check_exist(date=line.get('Date')[:10]):
+                    date_line = datetime.datetime.strptime(line.get('Date'), '%Y-%m-%dT%H:%M:%S').date()
+                    if await ExchangeRateData(session).check_exist(date=date_line):
                         continue
                     rate = float(line.get('Cur_OfficialRate'))
                     if rate:
                         exc_rate = ExchangeRate(
                             currency_id=currency.id,
-                            date=line.get('Date')[:10],
+                            date=date_line,
                             rate=rate,
                             scale=100,
                             base_currency_id=1
                         )
-                        print(exc_rate)
-                        # await ExchangeRateData(session).create_by_model(exc_rate)
+                        await ExchangeRateData(session).create_by_model(exc_rate)
 
     except Exception as ex:
         raise ex

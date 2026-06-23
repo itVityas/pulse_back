@@ -9,11 +9,12 @@ from schema.exchange_rate import (
     ExchangeRateSimpleSchema,
     ExchangeRatePatchSchema,
     UploadCurrencySchema,
+    UploadRangeSchema,
 )
 from schema.pagination import PaginationResponseSchema
 from repository.exchange_rate import ExchangeRateData
 from settings.database import get_session
-from service.currency_upload import get_currency_from_nbrb
+from service.currency_upload import get_currency_from_nbrb, get_currency_period_from_nbrb
 from share.my_exception import MyHttpException
 
 
@@ -139,6 +140,39 @@ async def currency_upload(
     try:
         count = await get_currency_from_nbrb(session, upload_data.date)
         return {'status': 'created', 'count': count}
+    except MyHttpException:
+        raise
+    except Exception as e:
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )
+
+
+@router.post('/upload/range/', status_code=status.HTTP_201_CREATED)
+async def currency_upload_range(
+            parameters: UploadRangeSchema = Depends(),
+            session=Depends(get_session)
+        ):
+    """
+upload currency from nbrb
+        date_start: date start upload
+        date_end: date end upload
+    """
+    try:
+        if parameters.date_start > parameters.date_end:
+            raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail='date_start > date_end',
+                title='Ошибка в датах'
+            )
+        await get_currency_period_from_nbrb(
+            session,
+            parameters.date_start,
+            parameters.date_end
+        )
+        return {'status': 'created'}
     except MyHttpException:
         raise
     except Exception as e:
