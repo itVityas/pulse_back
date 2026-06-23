@@ -7,7 +7,6 @@ from pathlib import Path
 # Add project root to Python path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
-sys.path.insert(0, str(project_root / 'src'))
 
 # Try to activate virtual environment if not already activated
 venv_path = project_root / '.venv'
@@ -42,7 +41,7 @@ async def load_fixtures():
     """Загрузка фикстур"""
     print("📦 Loading fixtures...")
     async for session in get_session():
-        await FixtureLoad(session).load_all_fixtures(Path(Path.cwd(), 'src/fixtures/'))
+        await FixtureLoad(session).load_all_fixtures(Path(Path.cwd(), 'fixtures/'))
     print("✅ Fixtures loaded")
 
 

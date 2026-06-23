@@ -6,21 +6,21 @@ from sqlalchemy import pool
 from alembic import context
 
 # мой импорт настроек
-from src.settings.config import database_config
-from src.model.base import Base
-from src.model.user import User
-from src.model.brand import Brand
-from src.model.matrix_type import MatrixType
-from src.model.os import OS
-from src.model.screen_resolution import ScreenResolution
-from src.model.shop import Shop
-from src.model.tv import TV
-from src.model.shop_link import ShopLink
-from src.model.currency import Currency
-from src.model.day_price import DayPrice
-from src.model.exchange_rate import ExchangeRate
-from src.model.refresh_token import RefreshToken
-from src.model.file import FileUpload
+from settings.config import database_config
+from model.base import Base
+from model.user import User
+from model.brand import Brand
+from model.matrix_type import MatrixType
+from model.os import OS
+from model.screen_resolution import ScreenResolution
+from model.shop import Shop
+from model.tv import TV
+from model.shop_link import ShopLink
+from model.currency import Currency
+from model.day_price import DayPrice
+from model.exchange_rate import ExchangeRate
+from model.refresh_token import RefreshToken
+from model.file import FileUpload
 
 
 # this is the Alembic Config object, which provides
