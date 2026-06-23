@@ -1,3 +1,5 @@
+from datetime import date, timedelta
+
 from sqlalchemy.ext.asyncio import (
     create_async_engine,
     AsyncSession,
@@ -6,7 +8,7 @@ from sqlalchemy.ext.asyncio import (
 
 from celery_app import celery_app
 from settings.config import database_config
-from repository.currency import CurrencyData
+from service.currency_upload import get_currency_from_nbrb
 
 
 @celery_app.task
@@ -17,8 +19,7 @@ def update_currency_rates_task():
         engine = create_async_engine(database_config.get_url())
         session_maker: AsyncSession = async_sessionmaker(engine, expire_on_commit=False)
         async with session_maker() as session:
-            curerrensy = await CurrencyData(session).get_multi()
-            for i in curerrensy:
-                print(i)
+            yesterday = date.today() - timedelta(days=1)
+            await get_currency_from_nbrb(session, yesterday)
 
     asyncio.run(_run())
