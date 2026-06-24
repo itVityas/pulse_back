@@ -17,19 +17,19 @@ services:
     ports:
       - 7000:7000
 
-  # testfrontpulse:
-  #  build: ./images/npm
-  #  container_name: testfrontpulse
-  #  # restart: always
-  #  volumes:
-  #    - ./pulse_front:/pulse
-  #  networks:
-  #    - testpulse-net
-  #  ports:
-  #    - 3020:3000
-  #  stdin_open: true
-  #  tty: true
-  #  command: bash -c "npm install --force && npm i typescript --legacy-peer-deps && npm install --legacy-peer-deps && npm start"
+  testfrontpulse:
+    build: ./images/npm
+    container_name: testfrontpulse
+    # restart: always
+    volumes:
+      - ./pulse_front:/pulse
+    networks:
+      - testpulse-net
+    ports:
+      - 3020:3000
+    stdin_open: true
+    tty: true
+    command: bash -c "npm install --force && npm i typescript --legacy-peer-deps && npm install --legacy-peer-deps && npm start"
 
 
   redis:
