@@ -48,7 +48,8 @@ async def get_currency_from_nbrb(session, date: datetype):
 
 async def get_currency_period_from_nbrb(session, date_start: datetype, date_end: datetype):
     try:
-        currensies, total = await CurrencyData(session).get_multi()
+        bel_currency = await CurrencyData(session).get_by_name('BYN')
+        currensies, _ = await CurrencyData(session).get_multi()
         for currency in currensies:
             if currency.name == 'BYN':
                 continue
@@ -58,16 +59,21 @@ async def get_currency_period_from_nbrb(session, date_start: datetype, date_end:
             if json_data:
                 for line in json_data:
                     date_line = datetime.datetime.strptime(line.get('Date'), '%Y-%m-%dT%H:%M:%S').date()
-                    if await ExchangeRateData(session).check_exist(date=date_line):
+                    if await ExchangeRateData(session).check_exist(date=date_line, currency_id=currency.id):
                         continue
                     rate = float(line.get('Cur_OfficialRate'))
+                    scale = 1
+                    if currency.name == 'RUB':
+                        scale = 100
+                    if currency.name == 'CNY':
+                        scale = 10
                     if rate:
                         exc_rate = ExchangeRate(
                             currency_id=currency.id,
                             date=date_line,
                             rate=rate,
-                            scale=100,
-                            base_currency_id=1
+                            scale=scale,
+                            base_currency_id=bel_currency.id
                         )
                         await ExchangeRateData(session).create_by_model(exc_rate)
 
