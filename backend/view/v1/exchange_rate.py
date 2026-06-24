@@ -181,3 +181,28 @@ upload currency from nbrb
                 detail=str(e),
                 title='Ошибка backend'
             )
+
+
+@router.post('/currency_chart/', status_code=status.HTTP_200_OK)
+async def currency_chart(
+            params: UploadRangeSchema,
+            session=Depends(get_session)
+        ):
+    """Получить график курса валюты
+
+    Параметры:
+        - date_start: datetype
+        - date_end: datetype
+    """
+    try:
+        exchange_rate_data = ExchangeRateData(session)
+        result = await exchange_rate_data.get_chart_period(params.date_start, params.date_end)
+        return result
+    except MyHttpException:
+        raise
+    except Exception as e:
+        raise MyHttpException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+                title='Ошибка backend'
+            )
