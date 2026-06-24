@@ -1,4 +1,4 @@
-markdown# 🚀 Pulse Project Deployment
+# 🚀 Pulse Project Deployment
 
 Данный репозиторий содержит конфигурацию для развертывания проекта **Pulse** с помощью Docker Compose. Архитектура включает в себя бэкенд на Python, фронтенд на Node.js/NPM, брокер очередей Redis, а также воркер и планировщик Celery.
 
