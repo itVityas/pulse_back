@@ -1,10 +1,12 @@
 networks:
-  testpulse-net:
+  main_net:
+    name: ${network_name}
+    driver: bridge
 
 services:
   testpulseback:
     build: ./images/python
-    container_name: testpulseback
+    container_name: ${back_name}
     # restart: always
     environment:
       -  PYTHONDONTWRITEBYTECODE=1
@@ -13,20 +15,20 @@ services:
       - ./backend:/pulse_back
     command: sh -c "pip3 install --no-cache-dir --default-timeout=100 -r requirements.txt && sleep 1  && python3 main.py"
     networks:
-      - testpulse-net
+      - main_net
     ports:
-      - 7000:7000
+      - ${back_port}:7000
 
   testfrontpulse:
     build: ./images/npm
-    container_name: testfrontpulse
+    container_name: ${front_name}
     # restart: always
     volumes:
       - ./pulse_front:/pulse
     networks:
-      - testpulse-net
+      - main_net
     ports:
-      - 3020:3000
+      - ${front_port}:3000
     stdin_open: true
     tty: true
     command: bash -c "npm install --force && npm i typescript --legacy-peer-deps && npm install --legacy-peer-deps && npm start"
@@ -34,7 +36,7 @@ services:
 
   redis:
     image: redis:8.6.4-alpine
-    container_name: redis
+    container_name: ${redis_name}
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -42,30 +44,36 @@ services:
       retries: 5
 #    restart: always
     networks:
-      - testpulse-net
+      - main_net
 
 
   celery_currency:
     build: ./images/python
-    container_name: celery_currency
+    environment:
+      -  PYTHONDONTWRITEBYTECODE=1
+      -  PYTHONUNBUFFERED=1
+    container_name: ${celery_currency_name}
     command: sh -c "pip3 install --no-cache-dir --default-timeout=100 -r requirements.txt && sleep 1 && python3 -m celery -A celery_app.celery_app worker"
     depends_on:
       redis:
         condition: service_healthy
     networks:
-      - testpulse-net
+      - main_net
     volumes:
       - ./backend:/pulse_back
 
 
   celery_beat:
     build: ./images/python
-    container_name: celery_beat
+    environment:
+      -  PYTHONDONTWRITEBYTECODE=1
+      -  PYTHONUNBUFFERED=1
+    container_name: ${celery_beat_name}
     command: sh -c "pip3 install --no-cache-dir --default-timeout=100 -r requirements.txt && sleep 1 && python3 -m celery -A celery_app.celery_app beat"
     depends_on:
       redis:
         condition: service_healthy
     networks:
-      - testpulse-net
+      - main_net
     volumes:
       - ./backend:/pulse_back

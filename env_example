@@ -1,0 +1,8 @@
+network_name=testpulse-net
+back_name=testpulseback
+back_port=7000
+front_name=testfrontpulse
+front_port=3020
+redis_name=redis
+celery_currency_name=celery_currency
+celery_beat_name=celery_beat
