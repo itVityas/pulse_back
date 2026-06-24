@@ -13,7 +13,7 @@ celery_app.conf.imports = ('celery_app.tasks',)
 celery_app.conf.beat_schedule = {
     'update-currency-rate': {
         'task': 'celery_app.tasks.update_currency_rates_task',
-        'schedule': crontab(minute='*/1')
+        'schedule': crontab(hour=3, minute=0)
     }
 }
 
