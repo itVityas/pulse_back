@@ -18,7 +18,7 @@ if venv_path.exists():
 
 from alembic.config import Config
 from alembic import command
-from settings.database import get_session, engine 
+from settings.database import get_session, engine
 from fixtures.load_fixtures import FixtureLoad
 
 
