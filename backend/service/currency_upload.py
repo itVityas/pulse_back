@@ -56,10 +56,8 @@ async def get_currency_period_from_nbrb(session, date_start: datetype, date_end:
             json_data = requests.get(
                 nbrb_period_url + f'{currency.cur_id}?startDate={date_start}&endDate={date_end}'
             ).json()
-            print(nbrb_period_url + f'{currency.cur_id}?startDate={date_start}&endDate={date_end}')
             if json_data:
                 for line in json_data:
-                    print(line)
                     date_line = datetime.datetime.strptime(line.get('Date'), '%Y-%m-%dT%H:%M:%S').date()
                     if await ExchangeRateData(session).check_exist(date=date_line, currency_id=currency.id):
                         continue
