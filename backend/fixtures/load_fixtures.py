@@ -51,13 +51,15 @@ class FixtureLoad:
 
         for line in fixture_data:
             name = line.get('name')
+            cur_id = line.get('cur_id')
 
             result = await self.session.execute(select(Currency).where(Currency.name == name))
             existing_currency = result.scalar_one_or_none()
 
             if not existing_currency:
                 new_currency = Currency(
-                    name=name
+                    name=name,
+                    cur_id=cur_id
                 )
                 self.session.add(new_currency)
                 await self.session.commit()
