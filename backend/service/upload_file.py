@@ -22,6 +22,8 @@ from model.day_price import DayPrice
 from repository.day_price import DayPriceData
 from model.file import FileUpload
 from repository.file import FileUploadData
+from service.currency_exchange import currency_exchange
+from repository.exchange_rate import ExchangeRateData
 
 
 async def file_upload_handle(
@@ -29,10 +31,9 @@ async def file_upload_handle(
         date: idate, session: AsyncSession,
         file_size: int, filename: str):
     try:
-        currency = await CurrencyData(session).get_one(currency_id)
         shop = await ShopData(session).get_one(shop_id)
-        if not currency or not shop:
-            raise Exception('shop or currency not exist')
+        if not shop:
+            raise Exception('shop not exist')
 
         file_obj = FileUpload(
             name=filename,
@@ -45,10 +46,15 @@ async def file_upload_handle(
         # предзагруженный список валют
         currency_list = await CurrencyData(session).get_multi()
         currency_byn = None
+        currency = None
         for i in currency_list[0]:
             if i.name == 'BYN':
                 currency_byn = i
-                break
+            if i.id == currency_id:
+                currency = i
+
+        if not currency or not currency_byn:
+            raise Exception('currency not exist')
 
         os_list = await OSData(session).get_multi()
         os_dict = {i.name: i for i in os_list[0]}
@@ -56,6 +62,11 @@ async def file_upload_handle(
         matrix_type_dict = {i.name: i for i in matrix_type_list[0]}
         screen_resolution_list = await ScreenResolutionData(session).get_multi()
         screen_resolution_dict = {i.name: i for i in screen_resolution_list[0]}
+        exchange_list = await ExchangeRateData(session).get_multi(
+            filters={
+                    'date__istartswith': date,
+                    'date__iendswith': date
+                })[0]
 
         wb = load_workbook(file)
         for sheet in wb.worksheets:
@@ -287,6 +298,16 @@ async def file_upload_handle(
                     shop_link = await ShopLinkData(session).create_by_model(shop_link_model)
 
                 if card_price != 0:
+                    if currency_id != currency_byn:
+                        card_price = await currency_exchange(
+                            session=session,
+                            from_cur=currency,
+                            to_cur=currency_byn,
+                            price=card_price,
+                            date=date,
+                            cur_bel=currency_byn,
+                            exchange_range_list=exchange_list
+                        )
                     day_price_model = DayPrice(
                             shop_link_id=shop_link.id,
                             price=card_price,
