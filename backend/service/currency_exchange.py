@@ -1,6 +1,7 @@
 from typing import Optional, List
 from datetime import date as datetype
 from decimal import Decimal
+import decimal
 
 from model.currency import Currency
 from repository.currency import CurrencyData
@@ -32,10 +33,10 @@ async def currency_exchange(
                 buf_price = Decimal(price) * exchange_range.rate / exchange_range.scale
             exchange_range = await ExchangeRateData(session).get_by_cur_date(to_cur, date)
             if not exchange_range or exchange_range == 1:
-                return buf_price
+                return buf_price.quantize(Decimal('1.00'), rounding=decimal.ROUND_HALF_UP)
             else:
                 buf_price = Decimal(buf_price) * exchange_range.rate / exchange_range.scale
-            return buf_price
+            return buf_price.quantize(Decimal('1.00'), rounding=decimal.ROUND_HALF_UP)
         else:
             exchange_from = None
             exchange_to = None
@@ -61,7 +62,7 @@ async def currency_exchange(
                 buf_price = Decimal(price) * exchange_from.rate / exchange_from.scale
             if exchange_to:
                 buf_price = Decimal(buf_price) * exchange_to.rate / exchange_to.scale
-            return buf_price
+            return buf_price.quantize(Decimal('1.00'), rounding=decimal.ROUND_HALF_UP)
 
     except Exception:
         raise
