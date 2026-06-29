@@ -51,6 +51,7 @@ class BaseData:
     def _apply_filters(self, query, filters: Optional[Dict[str, any]]) -> Any:
         if not filters:
             return query
+
         for field, value in filters.items():
             if '__' in field:
                 field, operator = field.split('__')
@@ -60,14 +61,14 @@ class BaseData:
                     query = query.where(getattr(self.model, field) == value)
                 elif operator == 'ne':
                     query = query.where(getattr(self.model, field) != value)
-                # elif operator == 'gt':
-                #     query = query.where(getattr(self.model, field) > value)
-                # elif operator == 'lt':
-                #     query = query.where(getattr(self.model, field) < value)
-                # elif operator == 'gte':
-                #     query = query.where(getattr(self.model, field) >= value)
-                # elif operator == 'lte':
-                #     query = query.where(getattr(self.model, field) <= value)
+                elif operator == 'gt':
+                    query = query.where(getattr(self.model, field) > value)
+                elif operator == 'lt':
+                    query = query.where(getattr(self.model, field) < value)
+                elif operator == 'gte':
+                    query = query.where(getattr(self.model, field) >= value)
+                elif operator == 'lte':
+                    query = query.where(getattr(self.model, field) <= value)
                 elif operator == 'icontains':
                     query = query.where(getattr(self.model, field).ilike(f'%{value}%'))
                 elif operator == 'istartswith':

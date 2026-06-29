@@ -4,7 +4,6 @@ import datetime
 
 from repository.currency import CurrencyData
 from model.exchange_rate import ExchangeRate
-from repository.exchange_rate import ExchangeRateData
 
 
 nbrb_url = 'https://api.nbrb.by/exrates/rates'
@@ -19,6 +18,8 @@ async def get_currency_from_nbrb(session, date: datetype):
     :return: currency data
     """
     try:
+        from repository.exchange_rate import ExchangeRateData
+
         if await ExchangeRateData(session).check_exist(date=date):
             return
         json_data = requests.get(nbrb_url + f'?{date}' + '&periodicity=0').json()
@@ -48,6 +49,8 @@ async def get_currency_from_nbrb(session, date: datetype):
 
 async def get_currency_period_from_nbrb(session, date_start: datetype, date_end: datetype):
     try:
+        from repository.exchange_rate import ExchangeRateData
+
         bel_currency = await CurrencyData(session).get_by_name('BYN')
         currensies, _ = await CurrencyData(session).get_multi()
         for currency in currensies:

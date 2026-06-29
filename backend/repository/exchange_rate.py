@@ -30,7 +30,7 @@ class ExchangeRateData(BaseData):
 
     async def get_by_cur_date(self, currency: Currency, date: datetype):
         if Currency.name == 'BYN':
-            return 1
+            return None
         query = select(ExchangeRate).where(
             (ExchangeRate.currency_id == currency.id) &
             (ExchangeRate.date == date)
@@ -40,13 +40,13 @@ class ExchangeRateData(BaseData):
         if rez:
             return rez
         else:
-            get_currency_from_nbrb(self.session, date)
+            await get_currency_from_nbrb(self.session, date)
             buf_rez = await self.session.execute(query)
             rez = buf_rez.scalars().first()
             if rez:
                 return rez
             else:
-                return 1
+                return None
 
     async def get_chart_period(self, date_start: datetype, date_end: datetype):
         bel_currency = await CurrencyData(self.session).get_by_name('BYN')

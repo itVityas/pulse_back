@@ -64,9 +64,10 @@ async def file_upload_handle(
         screen_resolution_dict = {i.name: i for i in screen_resolution_list[0]}
         exchange_list = await ExchangeRateData(session).get_multi(
             filters={
-                    'date__istartswith': date,
-                    'date__iendswith': date
-                })[0]
+                    'date__gte': date,
+                    'date__lte': date
+                })
+        exchange_list = exchange_list[0]
 
         wb = load_workbook(file)
         for sheet in wb.worksheets:
@@ -318,6 +319,16 @@ async def file_upload_handle(
                         )
                     await DayPriceData(session).create_by_model(day_price_model)
                 if full_price != 0:
+                    if currency_id != currency_byn:
+                        full_price = await currency_exchange(
+                            session=session,
+                            from_cur=currency,
+                            to_cur=currency_byn,
+                            price=full_price,
+                            date=date,
+                            cur_bel=currency_byn,
+                            exchange_range_list=exchange_list
+                        )
                     day_price_model = DayPrice(
                             shop_link_id=shop_link.id,
                             price=full_price,
@@ -328,6 +339,16 @@ async def file_upload_handle(
                         )
                     await DayPriceData(session).create_by_model(day_price_model)
                 if price != 0:
+                    if currency_id != currency_byn:
+                        full_price = await currency_exchange(
+                            session=session,
+                            from_cur=currency,
+                            to_cur=currency_byn,
+                            price=price,
+                            date=date,
+                            cur_bel=currency_byn,
+                            exchange_range_list=exchange_list
+                        )
                     day_price_model = DayPrice(
                             shop_link_id=shop_link.id,
                             price=price,

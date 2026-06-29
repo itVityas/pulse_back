@@ -1,5 +1,6 @@
 from typing import Optional, List
 from datetime import date as datetype
+from decimal import Decimal
 
 from model.currency import Currency
 from repository.currency import CurrencyData
@@ -17,7 +18,8 @@ async def currency_exchange(
     try:
         if from_cur == to_cur:
             return price
-        if not from_cur or to_cur or price or date:
+        if not from_cur or not to_cur or not price or not date:
+            print(from_cur, to_cur, date)
             raise Exception('not all params')
         if not cur_bel:
             cur_bel = await CurrencyData(session).get_by_name('BYN')
@@ -27,12 +29,12 @@ async def currency_exchange(
             if not exchange_range or exchange_range == 1:
                 buf_price = 1
             else:
-                buf_price = price * exchange_range.rate / exchange_range.scale
+                buf_price = Decimal(price) * exchange_range.rate / exchange_range.scale
             exchange_range = await ExchangeRateData(session).get_by_cur_date(to_cur, date)
             if not exchange_range or exchange_range == 1:
                 return buf_price
             else:
-                buf_price = buf_price * exchange_range.rate / exchange_range.scale
+                buf_price = Decimal(buf_price) * exchange_range.rate / exchange_range.scale
             return buf_price
         else:
             exchange_from = None
@@ -54,10 +56,12 @@ async def currency_exchange(
                 if exchange_to and exchange_to != -1:
                     exchange_range_list.append(exchange_to)
 
-            if exchange_from and exchange_to:
-                buf_price = price * exchange_from.rate / exchange_from.scale
-                buf_price = buf_price * exchange_to.rate / exchange_to.scale
-                return buf_price
+            buf_price = Decimal(price)
+            if exchange_from:
+                buf_price = Decimal(price) * exchange_from.rate / exchange_from.scale
+            if exchange_to:
+                buf_price = Decimal(buf_price) * exchange_to.rate / exchange_to.scale
+            return buf_price
 
     except Exception:
         raise
