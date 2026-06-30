@@ -20,7 +20,6 @@ async def currency_exchange(
         if from_cur == to_cur:
             return price
         if not from_cur or not to_cur or not price or not date:
-            print(from_cur, to_cur, date)
             raise Exception('not all params')
         if not cur_bel:
             cur_bel = await CurrencyData(session).get_by_name('BYN')
@@ -28,7 +27,7 @@ async def currency_exchange(
         if not exchange_range_list:
             exchange_range = await ExchangeRateData(session).get_by_cur_date(from_cur, date)
             if not exchange_range or exchange_range == 1:
-                buf_price = 1
+                buf_price = Decimal(price)
             else:
                 buf_price = Decimal(price) * exchange_range.rate / exchange_range.scale
             exchange_range = await ExchangeRateData(session).get_by_cur_date(to_cur, date)

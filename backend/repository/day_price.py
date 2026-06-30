@@ -11,6 +11,8 @@ from model.shop import Shop
 from model.day_price import DayPrice
 from model.shop_link import ShopLink
 from service.tv_filters import apply_tv_filters
+from repository.currency import CurrencyData
+from service.currency_exchange import currency_exchange
 
 
 class DayPriceData(BaseData):
@@ -168,16 +170,31 @@ class DayPriceData(BaseData):
             matrix_type, refresh_rate, tv_ids, currency
         )
 
+        cur_bel = await CurrencyData(self.session).get_by_name('BYN')
+        cur = await CurrencyData(self.session).get_by_name(currency[0])
+
         min_price_dict = {}
         if min_price:
             min_price_dict['shop'] = min_price[2]
-            min_price_dict['price'] = min_price[0]
+            min_price_dict['price'] = await currency_exchange(
+                self.session,
+                from_cur=cur_bel,
+                to_cur=cur,
+                price=min_price[0],
+                date=date_end,
+                cur_bel=cur_bel)
             min_price_dict['name'] = min_price[1]
 
         min_price_disc_dict = {}
         if min_price_disc:
             min_price_disc_dict['shop'] = min_price_disc[2]
-            min_price_disc_dict['price'] = min_price_disc[0]
+            min_price_disc_dict['price'] = await currency_exchange(
+                self.session,
+                from_cur=cur_bel,
+                to_cur=cur,
+                price=min_price_disc[0],
+                date=date_end,
+                cur_bel=cur_bel)
             min_price_disc_dict['name'] = min_price_disc[1]
 
         return {
