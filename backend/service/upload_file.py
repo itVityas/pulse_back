@@ -300,7 +300,7 @@ async def file_upload_handle(
 
                 if card_price != 0:
                     if currency_id != currency_byn:
-                        card_price = await currency_exchange(
+                        change_price = await currency_exchange(
                             session=session,
                             from_cur=currency,
                             to_cur=currency_byn,
@@ -311,7 +311,7 @@ async def file_upload_handle(
                         )
                     day_price_model = DayPrice(
                             shop_link_id=shop_link.id,
-                            price=card_price,
+                            price=change_price,
                             name='card_price',
                             currency_id=currency_byn.id,
                             date=date,
@@ -320,7 +320,7 @@ async def file_upload_handle(
                     await DayPriceData(session).create_by_model(day_price_model)
                 if full_price != 0:
                     if currency_id != currency_byn:
-                        full_price = await currency_exchange(
+                        change_price = await currency_exchange(
                             session=session,
                             from_cur=currency,
                             to_cur=currency_byn,
@@ -331,7 +331,7 @@ async def file_upload_handle(
                         )
                     day_price_model = DayPrice(
                             shop_link_id=shop_link.id,
-                            price=full_price,
+                            price=change_price,
                             name='full_price',
                             currency_id=currency_byn.id,
                             date=date,
@@ -340,7 +340,7 @@ async def file_upload_handle(
                     await DayPriceData(session).create_by_model(day_price_model)
                 if price != 0:
                     if currency_id != currency_byn:
-                        full_price = await currency_exchange(
+                        change_price = await currency_exchange(
                             session=session,
                             from_cur=currency,
                             to_cur=currency_byn,
@@ -351,7 +351,7 @@ async def file_upload_handle(
                         )
                     day_price_model = DayPrice(
                             shop_link_id=shop_link.id,
-                            price=price,
+                            price=change_price,
                             name='discount_price',
                             currency_id=currency_byn.id,
                             date=date,
