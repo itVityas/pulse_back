@@ -418,11 +418,31 @@ class DayPriceData(BaseData):
                     'tv_id': i[4]
                 })
 
+        list_exchange_rates = await ExchangeRateData(self.session).get_multi(
+            limit=-1,
+            filters={
+                'date__gte': date_start,
+                'date__lte': date_end
+            })
+        list_exchange_rates = list_exchange_rates[0]
+        cur_bel = await CurrencyData(self.session).get_by_name('BYN')
+        cur = await CurrencyData(self.session).get_by_name(currency[0])
         for i in res_list:
             if not rez.get(i[4]):
                 rez[i[4]] = []
+            if i[0] is None or i[0] == 0:
+                continue
+            price = await currency_exchange(
+                self.session,
+                from_cur=cur_bel,
+                to_cur=cur,
+                price=i[0],
+                date=date_end,
+                cur_bel=cur_bel,
+                exchange_range_list=list_exchange_rates
+            )
             rez[i[4]].append({
-                'price': i[0],
+                'price': price,
                 'name': i[2],
                 'shop': i[1],
                 'link': i[3],
