@@ -12,6 +12,7 @@ from model.day_price import DayPrice
 from model.shop_link import ShopLink
 from service.tv_filters import apply_tv_filters
 from repository.currency import CurrencyData
+from repository.exchange_rate import ExchangeRateData
 from service.currency_exchange import currency_exchange
 
 
@@ -84,13 +85,33 @@ class DayPriceData(BaseData):
         result = await self.session.execute(slct)
         res_list = result.all()
 
+        list_exchange_rates = await ExchangeRateData(self.session).get_multi(
+                limit=-1,
+                filters={
+                    'date__gte': date_start,
+                    'date__lte': date_end
+                })
+        list_exchange_rates = list_exchange_rates[0]
+        cur_bel = await CurrencyData(self.session).get_by_name('BYN')
+        cur = await CurrencyData(self.session).get_by_name(currency[0])
         buf_rez = {}
         for line in res_list:
+            if line[0] is None or line[0] == 0:
+                continue
+            price = await currency_exchange(
+                self.session,
+                from_cur=cur_bel,
+                to_cur=cur,
+                price=line[0],
+                date=line[1],
+                cur_bel=cur_bel,
+                exchange_range_list=list_exchange_rates
+            )
             min_obj = buf_rez.get(line[2])
             if min_obj:
-                min_obj.append([str(line[1]), line[0]])
+                min_obj.append([str(line[1]), price])
             else:
-                buf_rez[line[2]] = [(str(line[1]), line[0]),]
+                buf_rez[line[2]] = [(str(line[1]), price),]
 
         buf_rez2 = []
         for key, value in buf_rez.items():
@@ -187,13 +208,6 @@ class DayPriceData(BaseData):
 
         min_price_disc_dict = {}
         if min_price_disc:
-            print(cur_bel.id, min_price_disc[0], cur.id, await currency_exchange(
-                self.session,
-                from_cur=cur_bel,
-                to_cur=cur,
-                price=min_price_disc[0],
-                date=date_end,
-                cur_bel=cur_bel))
             min_price_disc_dict['shop'] = min_price_disc[2]
             min_price_disc_dict['price'] = await currency_exchange(
                 self.session,

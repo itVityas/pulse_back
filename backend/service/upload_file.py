@@ -63,6 +63,7 @@ async def file_upload_handle(
         screen_resolution_list = await ScreenResolutionData(session).get_multi()
         screen_resolution_dict = {i.name: i for i in screen_resolution_list[0]}
         exchange_list = await ExchangeRateData(session).get_multi(
+            limit=-1,
             filters={
                     'date__gte': date,
                     'date__lte': date

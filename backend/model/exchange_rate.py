@@ -36,4 +36,4 @@ class ExchangeRate(BaseModelOnlyId):
     )
 
     def __str__(self):
-        return f'<Currency>: {self.id}'
+        return f'<Exchagenge_rate>: {self.id}'

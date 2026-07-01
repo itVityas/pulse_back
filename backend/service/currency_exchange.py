@@ -61,7 +61,7 @@ async def currency_exchange(
             if exchange_from:
                 buf_price = Decimal(price) * exchange_from.rate / exchange_from.scale
             if exchange_to:
-                buf_price = (exchange_range.scale / exchange_range.rate) * buf_price
+                buf_price = (exchange_to.scale / exchange_to.rate) * buf_price
             return buf_price.quantize(Decimal('1.00'), rounding=decimal.ROUND_HALF_UP)
 
     except Exception:
