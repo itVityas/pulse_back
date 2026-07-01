@@ -313,7 +313,7 @@ async def file_upload_handle(
                             shop_link_id=shop_link.id,
                             price=card_price,
                             name='card_price',
-                            currency_id=currency_id,
+                            currency_id=currency_byn.id,
                             date=date,
                             file_upload_id=file_obj.id
                         )
@@ -333,7 +333,7 @@ async def file_upload_handle(
                             shop_link_id=shop_link.id,
                             price=full_price,
                             name='full_price',
-                            currency_id=currency_id,
+                            currency_id=currency_byn.id,
                             date=date,
                             file_upload_id=file_obj.id
                         )
@@ -353,7 +353,7 @@ async def file_upload_handle(
                             shop_link_id=shop_link.id,
                             price=price,
                             name='discount_price',
-                            currency_id=currency_id,
+                            currency_id=currency_byn.id,
                             date=date,
                             file_upload_id=file_obj.id
                         )
