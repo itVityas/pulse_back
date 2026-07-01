@@ -532,6 +532,15 @@ class DayPriceData(BaseData):
         result = await self.session.execute(slct)
         res_list = result.all()
 
+        list_exchange_rates = await ExchangeRateData(self.session).get_multi(
+            limit=-1,
+            filters={
+                'date__gte': date_start,
+                'date__lte': date_end
+            })
+        list_exchange_rates = list_exchange_rates[0]
+        cur_bel = await CurrencyData(self.session).get_by_name('BYN')
+        cur = await CurrencyData(self.session).get_by_name(currency[0])
         rez = {}
         for i in res_list:
             if not rez.get(i[2]):
@@ -573,9 +582,19 @@ class DayPriceData(BaseData):
                     'prices': dict(),
                     'alter_percentage': float('{:.3f}'.format(pers))
                 }
+
+            price = await currency_exchange(
+                self.session,
+                from_cur=cur_bel,
+                to_cur=cur,
+                price=i[0],
+                date=date_end,
+                cur_bel=cur_bel,
+                exchange_range_list=list_exchange_rates
+            )
             rez[i[2]]['shop_name'] = i[2]
             rez[i[2]]['link'] = i[3]
-            rez[i[2]]['prices'][i[1]] = i[0]
+            rez[i[2]]['prices'][i[1]] = price
             rez[i[2]]['min_price'] = min(rez[i[2]]['prices'].values())
 
         return rez.values()
