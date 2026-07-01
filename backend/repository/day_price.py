@@ -187,6 +187,13 @@ class DayPriceData(BaseData):
 
         min_price_disc_dict = {}
         if min_price_disc:
+            print(cur_bel.id, min_price_disc[0], cur.id, await currency_exchange(
+                self.session,
+                from_cur=cur_bel,
+                to_cur=cur,
+                price=min_price_disc[0],
+                date=date_end,
+                cur_bel=cur_bel))
             min_price_disc_dict['shop'] = min_price_disc[2]
             min_price_disc_dict['price'] = await currency_exchange(
                 self.session,
