@@ -29,7 +29,7 @@ class ExchangeRateData(BaseData):
         return is_exist
 
     async def get_by_cur_date(self, currency: Currency, date: datetype):
-        if Currency.name == 'BYN':
+        if currency.name == 'BYN':
             return None
         query = select(ExchangeRate).where(
             (ExchangeRate.currency_id == currency.id) &
