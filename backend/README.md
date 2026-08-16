@@ -13,3 +13,8 @@ alembic upgrade head обновить до последней миграции
 
 # initialize db
 python3 scripts/init_db.py
+
+# Parsing
+sudo apt-get install libavif16
+sudo playwright install-deps 
+playwright install установка браузеров для парсинга
