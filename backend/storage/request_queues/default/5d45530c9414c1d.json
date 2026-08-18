@@ -1,0 +1,19 @@
+{
+  "unique_key": "https://market.yandex.ru/card/konka-televizor-smart-tv-50-dyuymov-kt50-q682wb-50-4k-uhd-qled/4809362822?cc=cia3mzywzddkndlhnwy2mtm4ogm4zwi0zju4mtmymzlkyhdnayb95u0g&cpa=1&cpc=e8drgbgn6aqiuwnmvmcb9j2kop9a0ufkx5qmlqpaedq01zz6nn1s-p0g-z9dql04qwnz81lmncboibtdsgkc-cvfckrgiox2vepfjeny-6_l3-i4httyz9c-zxmixreg1mef7198fsxteus2jywqv-q-np0uyrve6pl8lwsjmmcyhbehpb70qtyvyjmrdb7atomnz2oh-hp5wgjldvdikeelqamucibbfp1recjmax8z_rlzyqqud4eewjbdvhhpnb6rto1g62ql5vgor6yev-tc23ppszqqibzswq3iuyzjyj4s37r07zhmerrod_mnyi-jq83uddrevpoyfigkptfqi_snhmsxvpepcncc122mx0i-mik4njqo03vjpls6zqrhmyt2flszphqxkovyxo2vovsdyfjre6aadud-ipb3ycpekcm7chmdizyim7yecveov8jnuynhqaarzvpyiwb17srq902shmtvgqmpsbtrugcv0jgnbak9fzr1mn9u1bxtqilripvb0jsjud9pcsynwy7nfjqm&do-waremd5=lq2g_o5mp8fp7hees2k5xg&from=search&from-show-uid=17870562423835238000106003&hid=90639&nid=26960210&resale_goods=resale_new&show-uid=17870562423835238000106003&showuid=17870562423835238000106003&sponsored=1",
+  "url": "https://market.yandex.ru/card/konka-televizor-smart-tv-50-dyuymov-kt50-q682wb-50-4k-uhd-qled/4809362822?do-waremd5=lQ2g_o5MP8fp7HeeS2k5Xg&sponsored=1&cpc=e8dRGBgn6AqIuWnMvMCb9J2kOP9A0UfkX5qmlqpAeDQ01zZ6nN1S-P0G-z9DQl04QWnZ81LmncBOiBTDSGkC-CVfckrgIOx2VEPfJeNY-6_L3-i4htTyz9c-zxmIXREG1meF7198fSXteus2JyWQv-q-Np0uYrVe6PL8LWSjmmCYhbehpB70qTYvYjMRDB7ATOMnz2Oh-hp5WGjlDVdikEELQAmUcibbFp1REcJmax8Z_rLZyQquD4EEwjbdVhhPNB6RtO1G62QL5Vgor6yEV-Tc23ppszQqIbzswQ3IUYzjyJ4S37R07zHMerrOD_mNyI-jq83UDDreVPoYFIgKPtfqI_snhMSXVPepCNcC122mX0i-mIK4NjQO03vjPLS6zqrHMYt2flszphQXkOVYxo2VOVsdYFJRE6AaduD-iPB3YCpEkcm7CHMdIzYiM7yeCVeOv8JnUynHQAArZVpyIwb17Srq902SHmtvgQmPsbtRugcv0JgnBAK9fzr1MN9U1bXtqIlripvb0jSJud9PCsYnwy7nfJqM&cc=CiA3MzYwZDdkNDlhNWY2MTM4OGM4ZWI0ZjU4MTMyMzlkYhDnAYB95u0G&resale_goods=resale_new&hid=90639&nid=26960210&show-uid=17870562423835238000106003&showUid=17870562423835238000106003&from-show-uid=17870562423835238000106003&cpa=1&from=search",
+  "method": "GET",
+  "payload": null,
+  "headers": {},
+  "user_data": {
+    "__crawlee": {
+      "enqueueStrategy": "same-hostname",
+      "state": 6,
+      "crawlDepth": 1
+    },
+    "label": "PRODUCT"
+  },
+  "retry_count": 0,
+  "no_retry": false,
+  "loaded_url": "https://market.yandex.ru/card/konka-televizor-smart-tv-50-dyuymov-kt50-q682wb-50-4k-uhd-qled/4809362822?do-waremd5=lQ2g_o5MP8fp7HeeS2k5Xg&sponsored=1&cpc=e8dRGBgn6AqIuWnMvMCb9J2kOP9A0UfkX5qmlqpAeDQ01zZ6nN1S-P0G-z9DQl04QWnZ81LmncBOiBTDSGkC-CVfckrgIOx2VEPfJeNY-6_L3-i4htTyz9c-zxmIXREG1meF7198fSXteus2JyWQv-q-Np0uYrVe6PL8LWSjmmCYhbehpB70qTYvYjMRDB7ATOMnz2Oh-hp5WGjlDVdikEELQAmUcibbFp1REcJmax8Z_rLZyQquD4EEwjbdVhhPNB6RtO1G62QL5Vgor6yEV-Tc23ppszQqIbzswQ3IUYzjyJ4S37R07zHMerrOD_mNyI-jq83UDDreVPoYFIgKPtfqI_snhMSXVPepCNcC122mX0i-mIK4NjQO03vjPLS6zqrHMYt2flszphQXkOVYxo2VOVsdYFJRE6AaduD-iPB3YCpEkcm7CHMdIzYiM7yeCVeOv8JnUynHQAArZVpyIwb17Srq902SHmtvgQmPsbtRugcv0JgnBAK9fzr1MN9U1bXtqIlripvb0jSJud9PCsYnwy7nfJqM&nid=26960210&ogV=-12",
+  "handled_at": "2026-08-18 12:31:34.768964+00:00"
+}

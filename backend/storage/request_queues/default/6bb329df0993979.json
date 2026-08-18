@@ -1,0 +1,19 @@
+{
+  "unique_key": "https://market.yandex.ru/card/televizor-haier-55-led-h1/4638774033?cc=cia3mzywzddkndlhnwy2mtm4ogm4zwi0zju4mtmymzlkyhdnayb95u0g&cpa=1&cpc=e8drgbgn6ao7hfpmqtk5u3vwef8la_2aeom18elgj_vnfhzizabpmel_54a9uu-n12pbk3vgbgsw4oq3ft94p6f67f-5pfjzf7srxqv6rfmcopbxvks3wofsq4td6vccrxe3xxls883ch7sjt5hr7uby63a1l_nqegy5nefnsya1hjab4nxddyshemu_frnxaf2rkvnbsutblnc2cp18qqjpiuohakcbg1kqc02hfss8bpsqyiznfyp5auzg6x5kf8v4clteitjdngs_n6bjkgybezcf_mntto61k76ynmfo0zbnkfvl05rrdyxxxgbkrkrbiyi8gyyfxyy3yavjj8735ghpe6fqs1lrst-0dhvrqz44xqqth6turiaxw8zeuqhowchas8zywms9ohvwo_nmerq0ic7p8weswigcnjbjjiwv7gucqtkl939m58qndwy6gywi8eo4qgcggxjc9pdql8_q2zme-lxcpoemozkempvn8vfdrtphnst8zhkv&do-waremd5=n9q6pzwhomthqcva5tzvmg&from=search&from-show-uid=17870562423835238000106002&hid=90639&nid=26960210&resale_goods=resale_new&show-uid=17870562423835238000106002&showuid=17870562423835238000106002&sponsored=1",
+  "url": "https://market.yandex.ru/card/televizor-haier-55-led-h1/4638774033?do-waremd5=N9Q6PzwHOMTHQcvA5TzvMg&sponsored=1&cpc=e8dRGBgn6Ao7HfPmqtk5U3vWEf8La_2AEoM18elgj_VnfHZIZabpMEL_54a9Uu-n12pbk3VgBGsW4oq3Ft94p6f67f-5pFJzF7srxQV6RfmcoPbXvKS3WOFSQ4tD6VCcrxe3XXlS883Ch7SJt5Hr7uby63A1l_NqegY5NefnsYA1HjAb4NXddYShemU_fRNXAf2RKVNbSuTbLNC2CP18qqjpiUOhAkcbG1kqC02HfSs8BpsqyIznFYP5Auzg6X5kf8V4cLTeitjdngS_N6BJkGybezCf_mNtTo61K76YNMfo0ZBNkfvl05RRdYxxxgbkRKrBIYI8GyyfXYy3yaVjJ8735GHpe6fQS1lRSt-0DhvRqz44XqQTh6TuriAXW8zeUqHoWchaS8ZYwms9OhvwO_nMERq0ic7p8weSwIgCnjBjjiwv7GUcqtkL939m58QndwY6Gywi8eo4QGCGgxJC9pdql8_Q2ZmE-lxCpOEmoZkempvN8vFdrtpHnst8ZhKv&cc=CiA3MzYwZDdkNDlhNWY2MTM4OGM4ZWI0ZjU4MTMyMzlkYhDnAYB95u0G&resale_goods=resale_new&hid=90639&nid=26960210&show-uid=17870562423835238000106002&showUid=17870562423835238000106002&from-show-uid=17870562423835238000106002&cpa=1&from=search",
+  "method": "GET",
+  "payload": null,
+  "headers": {},
+  "user_data": {
+    "__crawlee": {
+      "enqueueStrategy": "same-hostname",
+      "state": 6,
+      "crawlDepth": 1
+    },
+    "label": "PRODUCT"
+  },
+  "retry_count": 0,
+  "no_retry": false,
+  "loaded_url": "https://market.yandex.ru/card/televizor-haier-55-led-h1/4638774033?do-waremd5=N9Q6PzwHOMTHQcvA5TzvMg&sponsored=1&cpc=e8dRGBgn6Ao7HfPmqtk5U3vWEf8La_2AEoM18elgj_VnfHZIZabpMEL_54a9Uu-n12pbk3VgBGsW4oq3Ft94p6f67f-5pFJzF7srxQV6RfmcoPbXvKS3WOFSQ4tD6VCcrxe3XXlS883Ch7SJt5Hr7uby63A1l_NqegY5NefnsYA1HjAb4NXddYShemU_fRNXAf2RKVNbSuTbLNC2CP18qqjpiUOhAkcbG1kqC02HfSs8BpsqyIznFYP5Auzg6X5kf8V4cLTeitjdngS_N6BJkGybezCf_mNtTo61K76YNMfo0ZBNkfvl05RRdYxxxgbkRKrBIYI8GyyfXYy3yaVjJ8735GHpe6fQS1lRSt-0DhvRqz44XqQTh6TuriAXW8zeUqHoWchaS8ZYwms9OhvwO_nMERq0ic7p8weSwIgCnjBjjiwv7GUcqtkL939m58QndwY6Gywi8eo4QGCGgxJC9pdql8_Q2ZmE-lxCpOEmoZkempvN8vFdrtpHnst8ZhKv&nid=26960210&ogV=-12",
+  "handled_at": "2026-08-18 12:31:34.854491+00:00"
+}

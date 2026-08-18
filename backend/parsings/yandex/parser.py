@@ -17,7 +17,7 @@ router = Router[PlaywrightCrawlingContext]()
 @router.default_handler
 async def default_handler(context: PlaywrightCrawlingContext) -> None:
     """Обработчик главной страницы поиска со всеми телевизорами"""
-    parser_logger.info(f"Страница загружена успешно. {context.request.url}")
+    parser_logger.info(f"Главная страница загружена успешно. {context.request.url}")
 
     await asyncio.sleep(2)
     try:
@@ -56,39 +56,36 @@ async def default_handler(context: PlaywrightCrawlingContext) -> None:
     scroll_attempts = 0
     max_scrolls = 3  # количество прокруток
     scroll_pause = 2  # Пауза между прокрутками
-    tv_data = list()
     while scroll_attempts < max_scrolls:
         await context.page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
         await asyncio.sleep(scroll_pause)
 
-        # Считаем текущие карточки товаров
-        cards = context.page.locator('article[data-auto="snippet"]').or_(
-            context.page.locator('div[data-auto="snippet"]')
-        ).or_(
-            context.page.locator('article')
+        await context.enqueue_links(
+            selector='a[data-auto="snippet-link"]',
+            label='PRODUCT',
         )
-
-        link_elem = cards.locator('a[data-auto="snippet-link"]')
-        link = await link_elem.get_attribute('href') if (link_elem and await link_elem.first.get_attribute('href')) else None
-
-        title_elem = cards.locator('h3') or cards.locator('a[data-auto="snippet-link"]:not([aria-hidden="true"])')
-        title = title_elem.get_text(strip=True) if title_elem else None
-        print('title:', title, title_elem)
-
-        if not title and link:
-            # Вытаскиваем фрагмент "televizor-haier-32..." и делаем его читаемым
-            import urllib.parse
-            part = link.split('/card/')[1].split('/')[0]
-            title = urllib.parse.unquote(part).replace('-', ' ').capitalize()
-
-        if title or link:
-            tv_data.append({
-                'title': title,
-                'url': link
-            })
         scroll_attempts += 1
-    print('tv_data', tv_data)
-    context.push_data(tv_data)
+
+
+@router.handler('PRODUCT')
+async def product_handler(context: PlaywrightCrawlingContext) -> None:
+    """Обработчик страницы товара"""
+    parser_logger.info(f"Страница товара загружена. {context.request.url}")
+    await context.page.wait_for_load_state("networkidle")
+
+    # Получаем данные о товаре
+    product_data = {
+        'url': context.request.url,
+        'title': await context.page.title(),
+        'price': await context.page.eval_on_selector('span[data-test="price"]', 'el => el.textContent'),
+        'brand': await context.page.eval_on_selector('a[data-test="brand-link"]', 'el => el.textContent'),
+        'rating': await context.page.eval_on_selector('span[data-test="rating"]', 'el => el.textContent'),
+        'reviews_count': await context.page.eval_on_selector('a[data-test="reviews-link"]', 'el => el.textContent'),
+    }
+
+    # Сохраняем данные в результаты
+    context.push_data(product_data)
+    parser_logger.info(f"Данные о товаре сохранены: {product_data['title']}")
 
 
 class YandexMarketParser:
@@ -105,7 +102,7 @@ class YandexMarketParser:
             )
 
         crawler = PlaywrightCrawler(
-            max_requests_per_crawl=1,
+            max_requests_per_crawl=2,
             max_request_retries=0,
             proxy_configuration=proxy_configuration,
             headless=True,

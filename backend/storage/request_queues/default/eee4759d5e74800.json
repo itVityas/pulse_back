@@ -1,0 +1,19 @@
+{
+  "unique_key": "https://market.yandex.ru/card/43-televizor-tuvio-4k-ultra-hd-dled-frameless-na-platforme-yaos-td43ufbhh13-chernyy/4398250829?cc=cia3mzywzddkndlhnwy2mtm4ogm4zwi0zju4mtmymzlkyhahgh3m7qy,&cpa=1&cpc=e8drgbgn6apmn-too3vp6s8lrtwtrktvdehfwnc8dbc3foj-tzuuyq9js4l49paok0sk1qcwswjza67wqnu-j6oqpjfc0obi541cdyc4pdukn66a_9gciythwec1xd5zbbkwnobnkq1nxjufjw5v4vs5odghjfkxlrfjeltopvbflvxtyvbhhs8wzfigw3m1mi7imywoaoka11jmqswq-hpjklrtzu0yqlcioqh047a2c-7o7cuv1elfjmz3ftqcoe0ndzmmkomzyeg6znad3dtk7t781kprqx1jx1znla0d1wutujv53284awu6yqqyaqqyvocggm5dlrikp-na3wuslqtofm4elhteltnmz_eknsqypa7us2r3sel7fhkhso-ag5bfmtlddmibgp7mfzu4czqq26bkyeow2lf7vhaapyqwyu2etju6ivfwwbfo&do-waremd5=by9zughauucxv43xkcjidg&from=search&from-show-uid=17870562423835238000106004&hid=90639&nid=26960210&resale_goods=resale_new&show-uid=17870562423835238000106004&showuid=17870562423835238000106004",
+  "url": "https://market.yandex.ru/card/43-televizor-tuvio-4k-ultra-hd-dled-frameless-na-platforme-yaos-td43ufbhh13-chernyy/4398250829?do-waremd5=By9ZugHaUUcxv43xKcjIdg&cpc=e8dRGBgn6ApmN-ToO3Vp6S8LrtWtrKtvdEhFWnc8dBc3FOj-tZuuYq9js4l49pAOk0sk1QcwSWJza67WqNu-J6oQpJFC0OBi541cDYC4PduKN66A_9GCIYTHWEC1xd5ZbbkWnoBnkQ1nXJUFJW5V4Vs5ODghJfkxLrfJELToPVBflvXtyVbhhS8WzFIgW3M1mi7IMywoAoKA11jmqswq-HPJklrTZU0yqlCIoqh047A2C-7o7cUv1ElFJMz3fTQcoe0ndZMmKOMZYeg6zNaD3dTK7T781kprqX1jx1Znla0D1wuTUjV53284awu6yqQyaqQYvOCGGM5dlRikp-Na3WUSlqToFm4elHTelTNmZ_EKnsqypA7Us2R3SEL7FhkhSO-AG5BFMtLDDmIbgp7MFzu4CzQq26bKyeOw2lf7VhaAPyQWYu2eTjU6ivfwWBfO&cc=CiA3MzYwZDdkNDlhNWY2MTM4OGM4ZWI0ZjU4MTMyMzlkYhAHgH3m7QY,&resale_goods=resale_new&hid=90639&nid=26960210&show-uid=17870562423835238000106004&showUid=17870562423835238000106004&from-show-uid=17870562423835238000106004&cpa=1&from=search",
+  "method": "GET",
+  "payload": null,
+  "headers": {},
+  "user_data": {
+    "__crawlee": {
+      "enqueueStrategy": "same-hostname",
+      "state": 6,
+      "crawlDepth": 1
+    },
+    "label": "PRODUCT"
+  },
+  "retry_count": 0,
+  "no_retry": false,
+  "loaded_url": "https://market.yandex.ru/card/43-televizor-tuvio-4k-ultra-hd-dled-frameless-na-platforme-yaos-td43ufbhh13-chernyy/4398250829?do-waremd5=By9ZugHaUUcxv43xKcjIdg&cpc=e8dRGBgn6ApmN-ToO3Vp6S8LrtWtrKtvdEhFWnc8dBc3FOj-tZuuYq9js4l49pAOk0sk1QcwSWJza67WqNu-J6oQpJFC0OBi541cDYC4PduKN66A_9GCIYTHWEC1xd5ZbbkWnoBnkQ1nXJUFJW5V4Vs5ODghJfkxLrfJELToPVBflvXtyVbhhS8WzFIgW3M1mi7IMywoAoKA11jmqswq-HPJklrTZU0yqlCIoqh047A2C-7o7cUv1ElFJMz3fTQcoe0ndZMmKOMZYeg6zNaD3dTK7T781kprqX1jx1Znla0D1wuTUjV53284awu6yqQyaqQYvOCGGM5dlRikp-Na3WUSlqToFm4elHTelTNmZ_EKnsqypA7Us2R3SEL7FhkhSO-AG5BFMtLDDmIbgp7MFzu4CzQq26bKyeOw2lf7VhaAPyQWYu2eTjU6ivfwWBfO&cc=CiA3MzYwZDdkNDlhNWY2MTM4OGM4ZWI0ZjU4MTMyMzlkYhAHgH3m7QY,&resale_goods=resale_new&hid=90639&nid=26960210&show-uid=17870562423835238000106004&showUid=17870562423835238000106004&from-show-uid=17870562423835238000106004&cpa=1&from=search",
+  "handled_at": "2026-08-18 12:31:43.298159+00:00"
+}

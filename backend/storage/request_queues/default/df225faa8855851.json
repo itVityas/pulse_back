@@ -6,11 +6,11 @@
   "headers": {},
   "user_data": {
     "__crawlee": {
-      "state": 6
+      "state": 4
     }
   },
   "retry_count": 0,
   "no_retry": false,
-  "loaded_url": "https://market.yandex.ru/search?text=%D1%82%D0%B5%D0%BB%D0%B5%D0%B2%D0%B8%D0%B7%D0%BE%D1%80",
-  "handled_at": "2026-08-18 11:19:46.692143+00:00"
+  "loaded_url": null,
+  "handled_at": "2026-08-18 12:30:54.283027+00:00"
 }
