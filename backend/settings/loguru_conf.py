@@ -36,15 +36,26 @@ def custom_serializer(message):
     message["extra"]["json_output"] = json.dumps(payload, ensure_ascii=False)
 
 
-def setup_logger():
+def setup_logger(filename: str = 'app_json'):
     logging.basicConfig(handlers=[InterceptHandler()], level=0, force=True)
     logger.remove()
     logger.configure(patcher=custom_serializer)
-    logger.add(
-        "logs/app_json.log",
-        serialize=False,
-        format="{extra[json_output]}",
-        rotation="1 day",
-        retention="7 days",
-        level="INFO"
-    )
+    if filename == 'app_json':
+        logger.add(
+                f"logs/{filename}.log",
+                serialize=False,
+                format="{extra[json_output]}",
+                rotation="1 day",
+                retention="7 days",
+                level="INFO"
+            )
+    else:
+        logger.add(
+            f"logs/{filename}.log",
+            filter=lambda record: record["extra"].get("log_name") == filename,
+            serialize=False,
+            format="{extra[json_output]}",
+            rotation="1 day",
+            retention="7 days",
+            level="INFO"
+        )
