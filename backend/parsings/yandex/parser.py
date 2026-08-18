@@ -3,62 +3,66 @@ import asyncio
 from crawlee.proxy_configuration import ProxyConfiguration
 from crawlee.crawlers import PlaywrightCrawler, PlaywrightCrawlingContext
 from crawlee.router import Router
-from playwright.async_api import TimeoutError as PlaywrightTimeoutError
+from loguru import logger
 
+from settings.loguru_conf import setup_logger
+
+
+setup_logger('yandex')
+parser_logger = logger.bind(log_name="yandex")
 
 router = Router[PlaywrightCrawlingContext]()
 
 
 @router.default_handler
 async def default_handler(context: PlaywrightCrawlingContext) -> None:
-    """Обработчик главной страницы поиска."""
-    context.log.info(f'Загружаем Яндекс.Маркет: {context.request.url}')
-    page = context.page
+    """Обработчик главной страницы поиска со всеми телевизорами"""
+    print(1)
+    parser_logger.info("Страница загружена успешно. {context.request.url}")
 
-    try:
-        await page.wait_for_load_state('networkidle', timeout=10000)
-        await asyncio.sleep(2)
-    except Exception:
-        context.log.warning("Сеть не утихла, продолжаем работу с текущим состоянием.")
+    await asyncio.sleep(2)
+    await context.page.wait_for_selector('._1fWhD')
 
     # Проверка на явную блокировку/капчу
-    content_snapshot = await page.content()
-    if "Капча" in content_snapshot or "SmartCaptcha" in content_snapshot or "captcha" in page.url:
+    content_snapshot = await context.page.content()
+    if "Капча" in content_snapshot or "SmartCaptcha" in content_snapshot or "captcha" in context.page.url:
         context.log.error("⚠️ Внимание: Яндекс выкатил Капчу. Требуется смена IP (прокси) или сервис разгадывания.")
+        parser_logger.error("⚠️ Внимание: Яндекс выкатил Капчу. Требуется смена IP (прокси) или сервис разгадывания.")
         return
 
     # Закрываем окно авторизации, если появилось
     try:
-        close_button = page.locator('button[aria-label="Закрыть"]').or_(
-            page.locator('div[data-zone-name="loginPopup"] button')
+        close_button = context.page.locator('button[aria-label="Закрыть"]').or_(
+            context.page.locator('div[data-zone-name="loginPopup"] button')
         ).or_(
-            page.locator('button:has-text("Закрыть")')
+            context.page.locator('button:has-text("Закрыть")')
         )
 
         if await close_button.count() > 0:
             await close_button.first.click(timeout=2000)
             await asyncio.sleep(1)
             context.log.info("✅ Окно авторизации закрыто")
-    except:
+            parser_logger.info("✅ Окно авторизации закрыто")
+    except Exception:
         # Игнорируем, если окна нет
         # Если за 3 секунды окно не появилось, Playwright выбросит TimeoutError.
         # Мы его игнорируем и идем дальше парсить товары.
         context.log.info("Окно авторизации не появилось, продолжаем работу.")
+        parser_logger.info("Окно авторизации не появилось, продолжаем работу.")
 
     scroll_attempts = 0
-    max_scrolls = 3  # Ограничиваем, чтобы не уйти в бесконечность
-    previous_item_count = 0
+    max_scrolls = 3  # количество прокруток
     scroll_pause = 2  # Пауза между прокрутками
     tv_data = list()
     while scroll_attempts < max_scrolls:
-        await page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+        await context.page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
         await asyncio.sleep(scroll_pause)
 
         # Считаем текущие карточки товаров
-        cards = page.locator('article[data-auto="snippet"]').or_(
-            page.locator('div[data-auto="snippet"]')
+        cards = context.page.locator('article[data-auto="snippet"]').or_(
+            context.page.locator('div[data-auto="snippet"]')
         ).or_(
-            page.locator('article')
+            context.page.locator('article')
         )
 
         link_elem = cards.locator('a[data-auto="snippet-link"]')
@@ -91,6 +95,7 @@ class YandexMarketParser:
 
     async def parse(self):
         proxy_configuration = None
+        parser_logger.info("Запуск парсера")
         if self.proxy_list:
             proxy_configuration = ProxyConfiguration(
                 proxies=self.proxy_list
@@ -108,6 +113,7 @@ class YandexMarketParser:
 
 
 if __name__ == '__main__':
+    # python3 -m  parsings.yandex.parser
     parser = YandexMarketParser(
         proxy_list=None,
         # parse_url='https://market.yandex.ru/catalog--televizory/'
