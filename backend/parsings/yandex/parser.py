@@ -109,8 +109,6 @@ class YandexMarketParser:
             request_handler=router,
         )
         await crawler.run([self.parse_url])
-        data = await crawler.get_data()
-        print('data:', data)
 
 
 if __name__ == '__main__':

@@ -208,3 +208,4 @@ __marimo__/
 
 celerybeat-schedule
 backend/storage/
+storage/
