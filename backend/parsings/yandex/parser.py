@@ -17,11 +17,14 @@ router = Router[PlaywrightCrawlingContext]()
 @router.default_handler
 async def default_handler(context: PlaywrightCrawlingContext) -> None:
     """Обработчик главной страницы поиска со всеми телевизорами"""
-    print(1)
-    parser_logger.info("Страница загружена успешно. {context.request.url}")
+    parser_logger.info(f"Страница загружена успешно. {context.request.url}")
 
     await asyncio.sleep(2)
-    await context.page.wait_for_selector('._1fWhD')
+    try:
+        await context.page.wait_for_selector('._1fWhD', timeout=10000)
+    except Exception as e:
+        context.log.warning(f"Селектор '._1fWhD' не найден: {e}")
+        parser_logger.warning("Селектор '._1fWhD' не найден, продолжаем без него")
 
     # Проверка на явную блокировку/капчу
     content_snapshot = await context.page.content()
@@ -103,6 +106,7 @@ class YandexMarketParser:
 
         crawler = PlaywrightCrawler(
             max_requests_per_crawl=1,
+            max_request_retries=0,
             proxy_configuration=proxy_configuration,
             headless=True,
             request_handler=router,
