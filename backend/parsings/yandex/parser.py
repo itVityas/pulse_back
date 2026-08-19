@@ -79,6 +79,32 @@ async def product_handler(context: PlaywrightCrawlingContext) -> None:
             'name': await context.page.locator('h1[data-auto="productCardTitle"]').inner_text(),
         }
 
+        # Извлекаем верхние характеристики
+        spec_labels_top = await context.page.locator('label.ds-flex:has(span)').all()
+
+        # --- Извлечение описания ---
+        try:
+            # Ищем описание в блоке с классом _2jcSz или через data-zone-name="description"
+            description_elem = context.page.locator(
+                '[data-zone-name="description"] div._2jcSz span.ds-text_lineClamp_4')
+
+            if await description_elem.count() > 0:
+                description_text = await description_elem.inner_text()
+                product_data['description'] = description_text.strip()
+            else:
+                # Альтернативный поиск описания
+                description_elem = context.page.locator(
+                    'div[data-zone-name="description"] span.ds-text_lineClamp_4')
+                if await description_elem.count() > 0:
+                    description_text = await description_elem.inner_text()
+                    product_data['description'] = description_text.strip()
+                else:
+                    product_data['description'] = None
+                    parser_logger.warning("Описание не найдено")
+        except Exception as e:
+            parser_logger.warning(f"Ошибка при извлечении описания: {e}")
+            product_data['description'] = None
+
         # Переходим на вкладку с полными характеристиками
         full_specs_button = context.page.locator(
                 selector='a[data-auto="full-specs-link"]',
@@ -92,8 +118,9 @@ async def product_handler(context: PlaywrightCrawlingContext) -> None:
             parser_logger.warning('Все характеристики не найдены')
         await asyncio.sleep(2)
 
-        spec_labels = await context.page.locator('label.ds-flex:has(span)').all()
+        spec_labels_all = await context.page.locator('label.ds-flex:has(span)').all()
         specs = {}
+        spec_labels = spec_labels_top + spec_labels_all
 
         for label in spec_labels:
             try:
