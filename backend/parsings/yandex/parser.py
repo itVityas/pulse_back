@@ -54,7 +54,7 @@ async def default_handler(context: PlaywrightCrawlingContext) -> None:
         parser_logger.info("Окно авторизации не появилось, продолжаем работу.")
 
     scroll_attempts = 0
-    max_scrolls = 3  # количество прокруток
+    max_scrolls = 1  # количество прокруток
     scroll_pause = 2  # Пауза между прокрутками
     while scroll_attempts < max_scrolls:
         await context.page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
@@ -71,21 +71,98 @@ async def default_handler(context: PlaywrightCrawlingContext) -> None:
 async def product_handler(context: PlaywrightCrawlingContext) -> None:
     """Обработчик страницы товара"""
     parser_logger.info(f"Страница товара загружена. {context.request.url}")
-    await context.page.wait_for_load_state("networkidle")
+    await asyncio.sleep(2)
 
-    # Получаем данные о товаре
-    product_data = {
-        'url': context.request.url,
-        'title': await context.page.title(),
-        'price': await context.page.eval_on_selector('span[data-test="price"]', 'el => el.textContent'),
-        'brand': await context.page.eval_on_selector('a[data-test="brand-link"]', 'el => el.textContent'),
-        'rating': await context.page.eval_on_selector('span[data-test="rating"]', 'el => el.textContent'),
-        'reviews_count': await context.page.eval_on_selector('a[data-test="reviews-link"]', 'el => el.textContent'),
-    }
+    try:
+        product_data = {
+            'url': context.request.url,
+            'name': await context.page.locator('h1[data-auto="productCardTitle"]').inner_text(),
+        }
 
-    # Сохраняем данные в результаты
-    context.push_data(product_data)
-    parser_logger.info(f"Данные о товаре сохранены: {product_data['title']}")
+        # Переходим на вкладку с полными характеристиками
+        full_specs_button = context.page.locator(
+                selector='a[data-auto="full-specs-link"]',
+                has_text='Все характеристики',
+            ).first
+        if await full_specs_button.count() > 0:
+            await full_specs_button.scroll_into_view_if_needed()
+            await asyncio.sleep(0.5)
+            await full_specs_button.click()
+        else:
+            parser_logger.warning('Все характеристики не найдены')
+        await asyncio.sleep(2)
+
+        spec_labels = await context.page.locator('label.ds-flex:has(span)').all()
+        specs = {}
+
+        for label in spec_labels:
+            try:
+                # Пытаемся найти название (первый span) и значение (последний span)
+                # Но нужно исключить span внутри ссылок (если значение - это ссылка)
+                # Поэтому ищем все span, которые являются прямыми потомками label
+                all_spans = await label.locator('> div > span').all()
+
+                # Если не нашли через прямой путь, пробуем все span внутри label
+                if not all_spans:
+                    all_spans = await label.locator('span').all()
+
+                if len(all_spans) < 2:
+                    continue
+
+                # Первый span - это обычно название, последний - значение
+                key = await all_spans[0].inner_text()
+                value = await all_spans[-1].inner_text()
+
+                # Очищаем от лишних пробелов
+                key = key.strip()
+                value = value.strip()
+
+                # Если значение пустое, пробуем взять текст из ссылки, если она есть
+                if not value:
+                    link = label.locator('a')
+                    if await link.count() > 0:
+                        value = await link.inner_text()
+                        value = value.strip()
+
+                if key and value:
+                    specs[key] = value
+                    parser_logger.debug(f"Найдена характеристика: {key} = {value}")
+
+            except Exception as e:
+                parser_logger.warning(f"Ошибка при парсинге характеристики: {e}")
+                continue
+
+        # Извлекаем нужные характеристики
+        # Сопоставляем ключи из HTML с нашими эталонными (регистронезависимо)
+        for html_key, html_value in specs.items():
+            lower_key = html_key.lower()
+
+            if 'диагональ' in lower_key:
+                product_data['diagonal'] = html_value
+            elif ('разрешение hd' in lower_key) or ('разрешение' in lower_key and 'hd' in lower_key):
+                product_data['resolution'] = html_value
+            elif 'операционная система' in lower_key:
+                product_data['os'] = html_value
+            elif 'частота обновления' in lower_key:
+                product_data['refresh_rate'] = html_value
+            elif 'тип матрицы' in lower_key:
+                product_data['display'] = html_value
+            elif 'бренд' in lower_key:
+                product_data['brand'] = html_value
+
+        product_data.setdefault('diagonal', None)
+        product_data.setdefault('resolution', None)
+        product_data.setdefault('os', None)
+        product_data.setdefault('refresh_rate', None)
+        product_data.setdefault('display', None)
+        product_data.setdefault('brand', None)
+
+        print(product_data)
+        await context.push_data(product_data)
+        parser_logger.info(f"Данные о товаре сохранены: {product_data['name']}")
+    except Exception as e:
+        print(e)
+        parser_logger.error(f"Ошибка при парсинге страницы товара: {e}")
 
 
 class YandexMarketParser:
