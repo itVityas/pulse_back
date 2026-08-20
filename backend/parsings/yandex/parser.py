@@ -1,4 +1,5 @@
 import asyncio
+import re
 
 from crawlee.proxy_configuration import ProxyConfiguration
 from crawlee.crawlers import PlaywrightCrawler, PlaywrightCrawlingContext
@@ -19,7 +20,6 @@ MAXPASS = -1
 def extract_currency_symbol(price_text: str) -> str:
     """Извлечение символа валюты из текста цены"""
     # Удаляем цифры, пробелы, точки, запятые и другие разделители
-    import re
     # Оставляем только символы валют и буквы
     currency_pattern = r'[₽$€£¥]|руб|RUB|USD|EUR'
     match = re.search(currency_pattern, price_text)
