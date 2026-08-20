@@ -598,3 +598,54 @@ class DayPriceData(BaseData):
             rez[i[2]]['min_price'] = min(rez[i[2]]['prices'].values())
 
         return rez.values()
+
+    async def get_models_prices(
+                self,
+                date_start: datetype,
+                date_end: datetype,
+                diag_min: Optional[int],
+                diag_max: Optional[int],
+                shops: Optional[List[int]],
+                brands: Optional[List[int]],
+                os: Optional[List[int]],
+                screen_resolutions: Optional[List[int]],
+                matrix_type: Optional[List[int]],
+                refresh_rate: Optional[List[int]],
+                tv_ids: Optional[List[int]],
+                currency: str
+            ) -> Optional[dict]:
+        slct = select(
+            func.min(DayPrice.price),
+            DayPrice.date,
+            TV.name,
+        ).join(
+            DayPrice.shop_link
+        ).join(
+            ShopLink.shop
+        ).join(
+            ShopLink.tv
+        )
+
+        slct = await apply_tv_filters(
+            slct,
+            date_start=date_start,
+            date_end=date_end,
+            diag_min=diag_min,
+            diag_max=diag_max,
+            shops=shops,
+            brands=brands,
+            os=os,
+            screen_resolutions=screen_resolutions,
+            matrix_type=matrix_type,
+            refresh_rate=refresh_rate,
+            tv_ids=tv_ids,
+            currency=currency
+        )
+
+        slct = slct.group_by(
+            DayPrice.date,
+            TV.name,
+        )
+        result = await self.session.execute(slct)
+        res_list = result.all()
+        return res_list
