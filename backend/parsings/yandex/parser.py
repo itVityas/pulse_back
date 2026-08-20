@@ -13,6 +13,8 @@ parser_logger = logger.bind(log_name="yandex")
 
 router = Router[PlaywrightCrawlingContext]()
 
+MAXPASS = -1
+
 
 def extract_currency_symbol(price_text: str) -> str:
     """Извлечение символа валюты из текста цены"""
@@ -111,7 +113,10 @@ async def default_handler(context: PlaywrightCrawlingContext) -> None:
         parser_logger.info("Окно авторизации не появилось, продолжаем работу.")
 
     scroll_attempts = 0
-    max_scrolls = 1  # количество прокруток
+    if MAXPASS != -1:
+        max_scrolls = MAXPASS
+    else:
+        max_scrolls = 2_147_483_647
     scroll_pause = 2  # Пауза между прокрутками
     while scroll_attempts < max_scrolls:
         await context.page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
@@ -265,9 +270,11 @@ async def product_handler(context: PlaywrightCrawlingContext) -> None:
 
 
 class YandexMarketParser:
-    def __init__(self, proxy_list: list, parse_url: str):
+    def __init__(self, proxy_list: list, parse_url: str, max_pass: int = -1):
         self.proxy_list = proxy_list
         self.parse_url = parse_url
+        global MAXPASS
+        MAXPASS = max_pass
 
     async def parse(self):
         proxy_configuration = None
@@ -294,7 +301,8 @@ if __name__ == '__main__':
         proxy_list=None,
         # parse_url='https://market.yandex.ru/catalog--televizory/'
         # parse_url='https://market.yandex.ru/catalog--televizory/26960210/list?hid=90639&rs=eJwz4v7EyMHBIMGg0H-EFQASXQLR'
-        parse_url='https://market.yandex.ru/search?text=телевизор'
+        parse_url='https://market.yandex.ru/search?text=телевизор',
+        max_pass=1
     )
     asyncio.run(parser.parse())
     for i in parser.data:
