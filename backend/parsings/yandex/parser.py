@@ -14,6 +14,25 @@ parser_logger = logger.bind(log_name="yandex")
 router = Router[PlaywrightCrawlingContext]()
 
 
+def extract_currency_symbol(price_text: str) -> str:
+    """Извлечение символа валюты из текста цены"""
+    # Удаляем цифры, пробелы, точки, запятые и другие разделители
+    import re
+    # Оставляем только символы валют и буквы
+    currency_pattern = r'[₽$€£¥]|руб|RUB|USD|EUR'
+    match = re.search(currency_pattern, price_text)
+    if match:
+        return match.group(0)
+
+    # Если не нашли, пробуем найти любой нецифровой символ,
+    # который не является пробелом или разделителем
+    cleaned = re.sub(r'[\d\s.,]', '', price_text)
+    if cleaned:
+        return cleaned.strip()
+
+    return '₽'  # По умолчанию рубли
+
+
 async def extract_prices_direct(context: PlaywrightCrawlingContext, product_data: dict) -> None:
     """Извлечение цен напрямую со страницы без открытия блока"""
     try:
@@ -33,30 +52,23 @@ async def extract_prices_direct(context: PlaywrightCrawlingContext, product_data
             if old_price:
                 product_data['old_price'] = old_price
 
-        # Ищем скидку в процентах
-        # Ищем текст с символом % рядом с ценой
-        discount_elem = context.page.locator('span:has-text("%")').first
-        if await discount_elem.count() > 0:
-            discount_text = await discount_elem.inner_text()
-            discount = ''.join(filter(str.isdigit, discount_text))
-            if discount:
-                product_data['discount'] = discount
+        # Вторая цена - без карты
+        price_block = context.page.locator('div.ds-flex._2pfPL')
+        all_prices = await price_block.locator('span.ds-valueLine').all()
+        no_card_price_text = await all_prices[1].inner_text()
+        no_card_price = ''.join(filter(str.isdigit, no_card_price_text))
+        if no_card_price:
+            product_data['no_card_price'] = no_card_price
 
-        # Цену по карте ищем в тексте "Пэй" или "по карте"
-        # Это может быть сложнее, но попробуем найти
-        card_price_elem = context.page.locator('span:has-text("Пэй")').first
-        if await card_price_elem.count() > 0:
-            # Ищем родительский элемент с ценой
-            parent = card_price_elem.locator('xpath=ancestor::div[1]')
-            price_in_parent = parent.locator('span.ds-valueLine')
-            if await price_in_parent.count() > 0:
-                card_price_text = await price_in_parent.first.inner_text()
-                card_price = ''.join(filter(str.isdigit, card_price_text))
-                if card_price:
-                    product_data['card_price'] = card_price
+        # Извлекаем символ валюты из первой цены
+        currency_symbol = extract_currency_symbol(no_card_price_text)
+        if currency_symbol:
+            product_data['currency'] = currency_symbol
+            parser_logger.info(f"Символ валюты: {currency_symbol}")
 
     except Exception as e:
         parser_logger.warning(f"Ошибка при прямом парсинге цен: {e}")
+        raise e
 
 
 @router.default_handler
@@ -236,62 +248,15 @@ async def product_handler(context: PlaywrightCrawlingContext) -> None:
 
             if await price_details_icon.count() > 0:
                 await price_details_icon.first.click()
-                await asyncio.sleep(1)  # Ждём открытия блока с ценами
+                await asyncio.sleep(1)
 
                 # Теперь извлекаем цены из открывшегося блока
                 # Ищем блок с деталями цен (по классам из второго файла)
-                price_block = context.page.locator('div.ds-flex.ds-flex_col._3yRhS')
-
-                if await price_block.count() > 0:
-                    # Извлекаем цены
-                    # 1. Цена со скидкой (текущая цена) - первая цена в блоке
-                    current_price_elem = price_block.locator('span.ds-valueLine[data-auto="snippet-price-current"]')
-                    if await current_price_elem.count() > 0:
-                        current_price_text = await current_price_elem.inner_text()
-                        # Очищаем от пробелов и символов
-                        current_price = ''.join(filter(str.isdigit, current_price_text))
-                        product_data['current_price'] = current_price
-
-                    # 2. Цена по карте (вторая цена в блоке)
-                    # Ищем цену с пометкой "Пэй" или "по карте"
-                    card_price_elem = price_block.locator('span.ds-valueLine').nth(1)  # Вторая цена
-                    if await card_price_elem.count() > 0:
-                        card_price_text = await card_price_elem.inner_text()
-                        card_price = ''.join(filter(str.isdigit, card_price_text))
-                        if card_price and card_price != product_data.get('current_price', ''):
-                            product_data['card_price'] = card_price
-
-                    # 3. Обычная цена (без скидки) - ищем зачёркнутую цену
-                    old_price_elem = price_block.locator('span.ds-text_decoration_line-through')
-                    if await old_price_elem.count() > 0:
-                        old_price_text = await old_price_elem.inner_text()
-                        old_price = ''.join(filter(str.isdigit, old_price_text))
-                        if old_price:
-                            product_data['old_price'] = old_price
-
-                    # 4. Процент скидки
-                    discount_elem = price_block.locator('span.ds-text_group_core:has-text("%")')
-                    if await discount_elem.count() > 0:
-                        discount_text = await discount_elem.inner_text()
-                        discount = ''.join(filter(str.isdigit, discount_text))
-                        if discount:
-                            product_data['discount'] = discount
-
-                    # Закрываем блок с ценами (опционально)
-                    # await price_details_icon.first.click()
-                else:
-                    parser_logger.warning("Блок с деталями цен не найден")
-                    # Пробуем альтернативный способ - ищем цены на странице напрямую
-                    await extract_prices_direct(context, product_data)
-            else:
-                parser_logger.warning("Значок деталей цены не найден, пробуем прямой парсинг")
-                await extract_prices_direct(context, product_data)
+            await extract_prices_direct(context, product_data)
 
         except Exception as e:
             parser_logger.warning(f"Ошибка при извлечении цен: {e}")
-            await extract_prices_direct(context, product_data)
 
-        print(product_data)
         await context.push_data(product_data)
         parser_logger.info(f"Данные о товаре сохранены: {product_data['name']}")
     except Exception as e:
@@ -320,6 +285,7 @@ class YandexMarketParser:
             request_handler=router,
         )
         await crawler.run([self.parse_url])
+        self.data = await crawler.get_data()
 
 
 if __name__ == '__main__':
@@ -331,3 +297,9 @@ if __name__ == '__main__':
         parse_url='https://market.yandex.ru/search?text=телевизор'
     )
     asyncio.run(parser.parse())
+    for i in parser.data:
+        if len(i) > 1 and i[0] == 'items':
+            for j in i[1]:
+                print(j)
+        else:
+            print(i)
