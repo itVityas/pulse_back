@@ -118,15 +118,25 @@ async def default_handler(context: PlaywrightCrawlingContext) -> None:
     else:
         max_scrolls = 2_147_483_647
     scroll_pause = 2  # Пауза между прокрутками
+    print(scroll_attempts, max_scrolls)
     while scroll_attempts < max_scrolls:
-        await context.page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
-        await asyncio.sleep(scroll_pause)
+        try:
+            print(0)
+            # await context.page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+            context.page.mouse.wheel(0, 1500)
+            await asyncio.sleep(scroll_pause)
+            print(1)
 
-        await context.enqueue_links(
-            selector='a[data-auto="snippet-link"]',
-            label='PRODUCT',
-        )
-        scroll_attempts += 1
+            await context.enqueue_links(
+                selector='a[data-auto="snippet-link"]',
+                label='PRODUCT',
+            )
+            print(2)
+            print(scroll_attempts)
+            scroll_attempts += 1
+        except Exception as e:
+            parser_logger.warning(f"Ошибка прокрутки: {e}")
+            print(e)
 
 
 @router.handler('PRODUCT')
@@ -263,6 +273,7 @@ async def product_handler(context: PlaywrightCrawlingContext) -> None:
             parser_logger.warning(f"Ошибка при извлечении цен: {e}")
 
         await context.push_data(product_data)
+        print(product_data)
         parser_logger.info(f"Данные о товаре сохранены: {product_data['name']}")
     except Exception as e:
         print(e)
@@ -285,7 +296,7 @@ class YandexMarketParser:
             )
 
         crawler = PlaywrightCrawler(
-            max_requests_per_crawl=2,
+            max_requests_per_crawl=None,
             max_request_retries=0,
             proxy_configuration=proxy_configuration,
             headless=True,
@@ -302,7 +313,7 @@ if __name__ == '__main__':
         # parse_url='https://market.yandex.ru/catalog--televizory/'
         # parse_url='https://market.yandex.ru/catalog--televizory/26960210/list?hid=90639&rs=eJwz4v7EyMHBIMGg0H-EFQASXQLR'
         parse_url='https://market.yandex.ru/search?text=телевизор',
-        max_pass=1
+        max_pass=28
     )
     asyncio.run(parser.parse())
     for i in parser.data:
