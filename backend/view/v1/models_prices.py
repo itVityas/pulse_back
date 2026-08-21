@@ -157,22 +157,25 @@ async def models_prices_file(
 
         data_to_export = []
         for key, values in name_prise_dict.items():
+            name = key.replace(';', ' ').replace(',', ' ')
             data_to_export.append({
-                'Name': key,
+                'Name': name,
                 **values
             })
 
         output = io.StringIO()
-        writer = csv.DictWriter(output, fieldnames=fieldnames)
+        writer = csv.DictWriter(output, fieldnames=fieldnames, delimiter=';')
         writer.writeheader()
         writer.writerows(data_to_export)
         output.seek(0)
         csv_string = output.getvalue()
         output.close()
 
+        bom = '\ufeff'
+        content = (bom + csv_string).encode('utf-8-sig')
         return Response(
-            content=csv_string.encode('utf-8'),
-            media_type="text/csv",
+            content=content,
+            media_type="text/csv; charset=utf-8-sig",
             headers={"Content-Disposition": "attachment; filename=generated_data.csv"}
         )
 
