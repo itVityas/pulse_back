@@ -231,7 +231,8 @@ async def get_models_min_price(
                 filters=chart.filters,
             )
         if results2:
-            results.update(results2)
+            results2.update(results)
+            results = results2
         total = total + total2
         res_schema = list()
         for key, items in results.items():
