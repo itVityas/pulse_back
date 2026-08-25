@@ -77,7 +77,7 @@ async def models_prices_chart(
         for key, value in res_dict.items():
             res.append({
                 'name': key,
-                'coord': value
+                'coords': value
             })
         return res
 
