@@ -1,0 +1,19 @@
+{
+  "unique_key": "https://market.yandex.ru/card/televizor-hi-ht-32h01fb/103712621804?cc=cia4zjdiyjhlzjazy2q4ywqzmzkyndaznda3ntkxowu1mxdnayb95u0g&cpa=1&cpc=iebocky4mgwewi64uqzpw52zysupkhqfnumv5pfwbgg52i7lrxok_cda9mwkht6be9rjt5tfdsw83oomgmevo6wqbkv41ukamz9p6ylpw_9kc-psughtuy-ou6u5vvgwvuxjsbt1qvrjtwq6bkcr3epje_u8j6snsrbu3ko9u4muniqp7ziyli_zjyok7asd0r_1fwp6-7zkoxbxwyyynglcjqsplrdeks78gsefs9xyyjdk3d25rz0xzehs5eoh7icz_3bawo7g2zw1f8nzwksuyxvbv-t8j2go5ez6kqg_rv-mnlsutghvbj5_qhccuocke4i1zrknv4idkn_8-ouxwzk4oixa10mf1bpboqhjk6s82dkkeuarc-hsh5cmnmbfjv3gl0biemvo4toyzjptoqimdfovrcvfn7l19q8fydmskmrqnqyw2htwo351dndhcvuicnegsfol0cyhd-acdhghq-kw-uzlqzc_0sgwoikjk4ehohi8e3vofgoq&do-waremd5=lscq2sj-wcez9jwlyzu6oa&from=search&from-show-uid=17873169610141593972506002&hid=90639&nid=26960210&resale_goods=resale_new&show-uid=17873169610141593972506002&showuid=17873169610141593972506002&sponsored=1",
+  "url": "https://market.yandex.ru/card/televizor-hi-ht-32h01fb/103712621804?do-waremd5=lsCq2sj-wCez9jWlyZU6oA&sponsored=1&cpc=iEBOCkY4mGwEwI64uqZPw52ZysUpKhqfnumv5pfWBGg52i7lRxok_CDA9mwkht6bE9RjT5TfDsw83OomgmevO6WQbKv41UKAmZ9P6yLPw_9Kc-pSuGhTuy-oU6U5VvGwVUXJSBT1QVrJtWq6bKCR3EPjE_U8J6SNsRbU3KO9U4mUnIqP7zIyLI_ZjYOK7asD0R_1fWp6-7zKoXbxwYYyNglCjQsPLrDEks78GseFS9xyyJdk3D25Rz0xZEhS5EOh7iCZ_3bAWo7g2Zw1f8NZwKsuyXvbv-t8j2go5EZ6kqg_RV-mnLSutGHVBj5_qhCCuocKe4i1zrKnv4idKn_8-oUXwzk4OiXA10MF1BPboQhJK6s82DkkEUarc-HSH5CMNMbfJv3GL0biemvO4tOyZjpToqimDFOvRCVfn7l19Q8fydmskmrqnQyW2HTWO351dnDhCvUICnegsFOL0cyhd-AcDhghq-kW-uzlQZc_0sgWoIkjk4ehohI8e3vofGOQ&cc=CiA4ZjdiYjhlZjAzY2Q4YWQzMzkyNDAzNDA3NTkxOWU1MxDnAYB95u0G&resale_goods=resale_new&hid=90639&nid=26960210&show-uid=17873169610141593972506002&showUid=17873169610141593972506002&from-show-uid=17873169610141593972506002&cpa=1&from=search",
+  "method": "GET",
+  "payload": null,
+  "headers": {},
+  "user_data": {
+    "__crawlee": {
+      "enqueueStrategy": "same-hostname",
+      "state": 4,
+      "crawlDepth": 1
+    },
+    "label": "PRODUCT"
+  },
+  "retry_count": 0,
+  "no_retry": false,
+  "loaded_url": null,
+  "handled_at": "2026-08-21 12:57:18.175303+00:00"
+}

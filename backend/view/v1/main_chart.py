@@ -207,12 +207,32 @@ async def get_models_min_price(
             screen_resolutions=screen_resolutions,
             matrix_type=matrix_types,
             refresh_rate=refresh_rate,
-            tv_ids=tv_ids,
             currency=currency,
+            tv_ids=None,
             skip=chart.offset,
             limit=chart.limit,
             filters=chart.filters,
         )
+        results2, total2 = await DayPriceData(session=session).get_models_min_price(
+                date_start=date_start,
+                date_end=date_end,
+                diag_min=None,
+                diag_max=None,
+                shops=None,
+                brands=None,
+                os=None,
+                screen_resolutions=None,
+                matrix_type=None,
+                refresh_rate=None,
+                tv_ids=tv_ids,
+                currency=currency,
+                skip=chart.offset,
+                limit=chart.limit,
+                filters=chart.filters,
+            )
+        if results2:
+            results.update(results2)
+        total = total + total2
         res_schema = list()
         for key, items in results.items():
             res_schema.append(MainChartTVMinPriceResponse(

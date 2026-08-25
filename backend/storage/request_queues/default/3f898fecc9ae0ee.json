@@ -1,0 +1,19 @@
+{
+  "unique_key": "https://market.yandex.ru/card/televizor-tcl-55-q6cs-qd-mini-led-4k-hdr-google-tv/103828516240?cc=cia4zjdiyjhlzjazy2q4ywqzmzkyndaznda3ntkxowu1mxdnayb95u0g&cpa=1&cpc=iebocky4mgxw3448dtcikrf5juzg_inpomqjefhqiy0ex32pdjlkvisq_9lmnoalvowxargegqxoukd1gvb7s2pww_sw9zos4av67rwdw4owbnxtlc4jams_srgimenk9g-1ttsh1wsdujx5guqf9tdmzctrji1vipayqbjcsg3fn7ospkfctpmk35sk0feqh_tka67k-k8erylguybmcm2guitnk6xuegsnmqkgyowvv1qg-hwbxjq7-20px7ssaklz6zahxb1ni_qy04bc3z0bxvfsqsy-bbugmeif5tkqxuldurzi7vrwhlwhuhb75hnud7t8ydaceskhvasdkzlf1gqdphjjgoa9llsfteyfufgi5zbsypprnswd23ptlisgx-rnkehlzh7ymgcup3dveaksz60jzww4wc0q9zo0ggzz-wg7kh_p2y1fqqzprag2vsheycdcydq78epuvijxslla-sedw_uex0qj3dl1e-v5_wzxpw29byvgkovoecvxhtik-eh8cmmb3iahsyhod9djashy&do-waremd5=gina-_gwqjm0frwo65gg0a&from=search&from-show-uid=17873169610141593972506004&hid=90639&nid=26960210&resale_goods=resale_new&show-uid=17873169610141593972506004&showuid=17873169610141593972506004&sponsored=1",
+  "url": "https://market.yandex.ru/card/televizor-tcl-55-q6cs-qd-mini-led-4k-hdr-google-tv/103828516240?do-waremd5=gIna-_Gwqjm0frwo65gg0A&sponsored=1&cpc=iEBOCkY4mGxW3448DTcIKRf5JUZg_iNpoMqjEfhQiy0eX32pDJlkvIsQ_9LMnOAlVoWXarGEGqXoUkd1GVB7s2pWw_Sw9zOs4aV67rWDw4OWBnxTLc4jaMs_srGImeNK9G-1tTsH1wsduJx5GuQF9TDMzCtRJi1vIPAYQbjCSg3FN7OsPKfctpMk35sk0FEqh_TKa67K-k8ERYLGUyBMcM2guiTNK6XUEGSnMQkgYoWvv1qg-HWBxjQ7-20pX7SsAKlZ6ZaHxB1NI_Qy04Bc3Z0bxVFSQsY-BbUGMEif5tkqxULDUrZI7VrWHlWHUhb75HnUd7T8yDAcesKhVAsDkzLF1gQdPhjJGoA9llSFteyFuFGI5ZBSypPrNSWD23pTlISGX-RnKEHlzh7yMgCUp3dVEakSz60JZWw4wC0Q9zo0ggzZ-wg7KH_p2Y1fQqZpraG2VsHEYCdCyDq78ePuvijXSllA-SeDW_UeX0Qj3dL1e-V5_WZxpw29ByvGKOvoEcVXHtik-EH8CMmB3IahsyhOd9dJAShy&cc=CiA4ZjdiYjhlZjAzY2Q4YWQzMzkyNDAzNDA3NTkxOWU1MxDnAYB95u0G&resale_goods=resale_new&hid=90639&nid=26960210&show-uid=17873169610141593972506004&showUid=17873169610141593972506004&from-show-uid=17873169610141593972506004&cpa=1&from=search",
+  "method": "GET",
+  "payload": null,
+  "headers": {},
+  "user_data": {
+    "__crawlee": {
+      "enqueueStrategy": "same-hostname",
+      "state": 4,
+      "crawlDepth": 1
+    },
+    "label": "PRODUCT"
+  },
+  "retry_count": 0,
+  "no_retry": false,
+  "loaded_url": null,
+  "handled_at": "2026-08-21 12:57:18.603935+00:00"
+}

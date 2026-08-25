@@ -1,6 +1,8 @@
 from typing import Optional, List
 from datetime import date as datetype
 
+from sqlalchemy import or_
+
 from model.tv import TV
 from model.shop import Shop
 from model.day_price import DayPrice
@@ -23,7 +25,7 @@ async def apply_tv_filters(
             matrix_type: Optional[List[str]],
             refresh_rate: Optional[List[int]],
             tv_ids: Optional[List[int]],
-            currency: str
+            currency: str,
         ):
     """apply filters to DayPrice query. Need join ShopLink, Shop, TV
 
@@ -53,48 +55,46 @@ async def apply_tv_filters(
 
     if tv_ids:
         query = query.where(
-            TV.id.in_(tv_ids)
+            or_(TV.id.in_(tv_ids))
         )
-        return query
-    else:
-        if shops:
-            query = query.where(
-                Shop.name.in_(shops)
-            )
-        if brands:
-            query = query.join(
-                    TV.brand
-                ).where(
-                    Brand.name.in_(brands)
-                )
-        if matrix_type:
-            query = query.join(
-                TV.matrix_type
+    if shops:
+        query = query.where(
+            Shop.name.in_(shops)
+        )
+    if brands:
+        query = query.join(
+                TV.brand
             ).where(
-                MatrixType.name.in_(matrix_type)
+                Brand.name.in_(brands)
             )
-        if os:
-            query = query.join(
-                TV.os
-            ).where(
-                OS.name.in_(os)
-            )
-        if screen_resolutions:
-            query = query.join(
-                TV.screen_resolution
-            ).where(
-                ScreenResolution.name.in_(screen_resolutions)
-            )
-        if refresh_rate:
-            query = query.where(
-                TV.refresh_rate.in_(refresh_rate)
-            )
-        if diag_min:
-            query = query.where(
-                TV.diagonal >= diag_min
-            )
-        if diag_max:
-            query = query.where(
-                TV.diagonal <= diag_max
-            )
+    if matrix_type:
+        query = query.join(
+            TV.matrix_type
+        ).where(
+            MatrixType.name.in_(matrix_type)
+        )
+    if os:
+        query = query.join(
+            TV.os
+        ).where(
+            OS.name.in_(os)
+        )
+    if screen_resolutions:
+        query = query.join(
+            TV.screen_resolution
+        ).where(
+            ScreenResolution.name.in_(screen_resolutions)
+        )
+    if refresh_rate:
+        query = query.where(
+            TV.refresh_rate.in_(refresh_rate)
+        )
+    if diag_min:
+        query = query.where(
+            TV.diagonal >= diag_min
+        )
+    if diag_max:
+        query = query.where(
+            TV.diagonal <= diag_max
+        )
     return query

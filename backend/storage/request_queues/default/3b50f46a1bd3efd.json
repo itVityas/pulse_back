@@ -1,0 +1,19 @@
+{
+  "unique_key": "https://market.yandex.ru/card/umnyy-televizor-sber-sdx-43f3000dba/5623737554?cc=cia4zjdiyjhlzjazy2q4ywqzmzkyndaznda3ntkxowu1mxdnayb95u0g&cpa=1&cpc=iebocky4mgwogqk5dks69vqatozutf1ipypigu9tkszhe59daftd7jcwj3k_zlyyedxgrjirozhlrr1yy4hvaf1f9ua3hmtq7wswjbvvvvpni6kpta3nywinatm8xtnwcjqvdgtcqcnn0royktlf8gncuzp0czppx9pbqgov0irbctunuxnzfvlmaznw7qvhnmfnskh1u6hapcbyzqqhbrxdxrcecsung-mqboo5q-fkjwoynorigm0algl_bmjbal1h4mgyn9gxznwatvbtoimawjzkae2akyqdd67hjtr-blzwhwozafq8rttnrbructg51yt9bqmxvd6le5njlrcpr_vktq-amq2ixf43qz0ymbpkoxa5a2m95dhstsoer5dw_mfeabb4zbmjj6khymtnilggq9apuiix-xb8tasngsgd8die9suzaphdk_xmgtx2br1zwivmwg9b1hbux3ojcjetb5ajido0qnxf0b4xn_ejape5ma9zt_8wb86p&do-waremd5=alparhfw_cc-m28p6lwt_q&from=search&from-show-uid=17873169610141593972506007&hid=90639&nid=26960210&resale_goods=resale_new&show-uid=17873169610141593972506007&showuid=17873169610141593972506007&sponsored=1",
+  "url": "https://market.yandex.ru/card/umnyy-televizor-sber-sdx-43f3000dba/5623737554?do-waremd5=aLpaRhFw_CC-M28p6lWt_Q&sponsored=1&cpc=iEBOCkY4mGwOGQK5dkS69VQATozUTf1IPYPIGu9tkSzHE59DafTd7JCwj3K_ZLYYeDxGrJIrOZhLrR1Yy4hvAF1F9Ua3HMtQ7wsWjBvVVVpnI6KptA3NyWINATm8xTNWcJQVDgtCQcnn0rOYkTLF8gNcuZp0CZpPX9PbqGOv0IrBcTuNuxNzFVlMAZnw7qVHnMFNskH1U6hAPCbyzQqhbrxDxRceCSuNG-MQbOO5q-FKjwOyNORigM0ALGL_BMJbaL1h4MgYN9GXzNWAtVbTOimAwjZkAe2akYQDd67hjTR-blZWhwoZAfQ8rtTnrBrUCtG51Yt9BqmxVd6LE5NjlrCPr_VKtq-amq2IXF43Qz0yMbpKoXA5a2M95dHsTSOeR5DW_MfEAbB4zbMjj6KhymtnilggQ9apuiix-Xb8TaSNGSGd8DIe9SUZAphdK_XMgtx2BR1ZWiVmWg9B1hbUX3OjCJeTB5AJido0qnXf0b4xn_EJape5mA9zT_8WB86p&cc=CiA4ZjdiYjhlZjAzY2Q4YWQzMzkyNDAzNDA3NTkxOWU1MxDnAYB95u0G&resale_goods=resale_new&hid=90639&nid=26960210&show-uid=17873169610141593972506007&showUid=17873169610141593972506007&from-show-uid=17873169610141593972506007&cpa=1&from=search",
+  "method": "GET",
+  "payload": null,
+  "headers": {},
+  "user_data": {
+    "__crawlee": {
+      "enqueueStrategy": "same-hostname",
+      "state": 4,
+      "crawlDepth": 1
+    },
+    "label": "PRODUCT"
+  },
+  "retry_count": 0,
+  "no_retry": false,
+  "loaded_url": null,
+  "handled_at": "2026-08-21 12:57:33.495507+00:00"
+}

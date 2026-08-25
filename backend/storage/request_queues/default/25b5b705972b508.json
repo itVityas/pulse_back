@@ -1,0 +1,19 @@
+{
+  "unique_key": "https://market.yandex.ru/card/umnyy-televizor-sber-sdx-32h3114/4596482622?cc=cia4zjdiyjhlzjazy2q4ywqzmzkyndaznda3ntkxowu1mxdnayb95u0g&cpa=1&cpc=iebocky4mgyfjz43qqoat7gy-5us9qswrfjdpfr0apvm-vyto7zb7_ebqqgzmcngglsbv0d9r6x4at12ncisigftssfeitzxc5idbrzbrbglicnlgt_3ifohqdflh-wixoexis6ovnnv9lmtupr9wrt4lhyged0sfe1uvnnsucycgmhifq1hccxvxqh7hzaik45lfuts4shawa7-i-fo_7c69et6ljarbkhizw1airzl0yb91kvzflo3hbyyin79fqasn3u2ry7yo-j0wf2xopwigdtua7b7ejwef3uvyptm2ghlkfwrt6q9309bfzq8zhdo_9anbwbtlfkzxbv1la38oonquwry6nbroeh0jfbwmqumdccroyn_x0uibny7ec6lolaqw4o5mdaxj9rcx1h1dh2dbw24besxzcnztfkxwonjsqipw1xqvfrbjc-xwkhmuiur3xgbyjzu8hw8ijueelwkiedeevzu5yewmj23cj74q-c4vcodoffmu9yb&do-waremd5=dni-sgp692lmkba8rll-nq&from=search&from-show-uid=17873169610141593972506003&hid=90639&nid=26960210&resale_goods=resale_new&show-uid=17873169610141593972506003&showuid=17873169610141593972506003&sponsored=1",
+  "url": "https://market.yandex.ru/card/umnyy-televizor-sber-sdx-32h3114/4596482622?do-waremd5=dnI-SgP692lMKBA8RLL-nQ&sponsored=1&cpc=iEBOCkY4mGyfjz43qQOaT7GY-5uS9qSWrFJdpfr0ApVM-Vyto7zB7_EbqqGZMCngGlsbV0D9R6x4AT12nCiSIGfTSsfeItZXc5idBRZbrBGlIcnLgt_3ifOhqDFLH-wixoExis6OVnnv9LMtuPR9WRt4lhygEd0sfE1uvnnSUcYcGMhIfq1HcCxVxQh7hZaIk45lfutS4SHAwA7-I-FO_7c69et6ljArbkHiZw1airzl0YB91KvZflO3HbYYIn79FQAsN3U2ry7yo-j0WF2xOpwiGDTuA7b7EjWEf3UvYPtM2gHlkfwRt6q9309bFZQ8zHDO_9AnbwbTLFKzXBV1la38oonquwrY6nbRoeh0jfBwMQUmdccrOyN_X0UIbny7ec6lolaQW4o5mDAxJ9rCx1H1Dh2dbw24BESxzcnztFKxWoNJSqIPw1XqvFrbJc-xwkHmuiUR3XgbyJZU8Hw8IjuEElWKiedeEvzU5YewMj23cj74Q-C4vCoDofFMu9yb&cc=CiA4ZjdiYjhlZjAzY2Q4YWQzMzkyNDAzNDA3NTkxOWU1MxDnAYB95u0G&resale_goods=resale_new&hid=90639&nid=26960210&show-uid=17873169610141593972506003&showUid=17873169610141593972506003&from-show-uid=17873169610141593972506003&cpa=1&from=search",
+  "method": "GET",
+  "payload": null,
+  "headers": {},
+  "user_data": {
+    "__crawlee": {
+      "enqueueStrategy": "same-hostname",
+      "state": 4,
+      "crawlDepth": 1
+    },
+    "label": "PRODUCT"
+  },
+  "retry_count": 0,
+  "no_retry": false,
+  "loaded_url": null,
+  "handled_at": "2026-08-21 12:57:17.723120+00:00"
+}
