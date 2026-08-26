@@ -658,4 +658,28 @@ class DayPriceData(BaseData):
         )
         result = await self.session.execute(slct)
         res_list = result.all()
-        return res_list
+
+        res_list_cur = []
+        list_exchange_rates = await ExchangeRateData(self.session).get_multi(
+            limit=-1,
+            filters={
+                'date__gte': date_start,
+                'date__lte': date_end
+            })
+        list_exchange_rates = list_exchange_rates[0]
+        cur_bel = await CurrencyData(self.session).get_by_name('BYN')
+        cur = await CurrencyData(self.session).get_by_name(currency[0])
+        for i in res_list:
+            price = await currency_exchange(
+                self.session,
+                from_cur=cur_bel,
+                to_cur=cur,
+                price=i[0],
+                date=date_end,
+                cur_bel=cur_bel,
+                exchange_range_list=list_exchange_rates
+            )
+            buf = [price, i[1], i[2]]
+            res_list_cur.append(buf)
+
+        return res_list_cur
