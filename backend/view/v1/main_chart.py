@@ -213,7 +213,10 @@ async def get_models_min_price(
             limit=chart.limit,
             filters=chart.filters,
         )
-        results2, total2 = await DayPriceData(session=session).get_models_min_price(
+        results2 = None
+        total2 = 0
+        if tv_ids:
+            results2, total2 = await DayPriceData(session=session).get_models_min_price(
                 date_start=date_start,
                 date_end=date_end,
                 diag_min=None,

@@ -57,6 +57,7 @@ async def apply_tv_filters(
         query = query.where(
             or_(TV.id.in_(tv_ids))
         )
+        return query
     if shops:
         query = query.where(
             Shop.name.in_(shops)
