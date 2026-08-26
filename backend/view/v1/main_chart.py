@@ -234,6 +234,7 @@ async def get_models_min_price(
                 filters=chart.filters,
             )
         if results2:
+            total2 = len(results2)
             results2.update(results)
             results = results2
         total = total + total2
