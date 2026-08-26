@@ -361,7 +361,7 @@ class DayPriceData(BaseData):
             screen_resolutions=screen_resolutions,
             matrix_type=matrix_type,
             refresh_rate=refresh_rate,
-            tv_ids=tv_ids,
+            tv_ids=None,
             currency=currency
         )
 
@@ -406,18 +406,6 @@ class DayPriceData(BaseData):
         res_list = result.all()
 
         rez = dict()
-        if select_tvs:
-            for i in select_tvs:
-                if not rez.get(i[4]):
-                    rez[i[4]] = []
-                rez[i[4]].append({
-                    'price': i[0],
-                    'name': i[2],
-                    'shop': i[1],
-                    'link': i[3],
-                    'tv_id': i[4]
-                })
-
         list_exchange_rates = await ExchangeRateData(self.session).get_multi(
             limit=-1,
             filters={
@@ -427,6 +415,28 @@ class DayPriceData(BaseData):
         list_exchange_rates = list_exchange_rates[0]
         cur_bel = await CurrencyData(self.session).get_by_name('BYN')
         cur = await CurrencyData(self.session).get_by_name(currency[0])
+
+        if select_tvs:
+            for i in select_tvs:
+                if not rez.get(i[4]):
+                    rez[i[4]] = []
+                price = await currency_exchange(
+                                self.session,
+                                from_cur=cur_bel,
+                                to_cur=cur,
+                                price=i[0],
+                                date=date_end,
+                                cur_bel=cur_bel,
+                                exchange_range_list=list_exchange_rates
+                            )
+                rez[i[4]].append({
+                    'price': price,
+                    'name': i[2],
+                    'shop': i[1],
+                    'link': i[3],
+                    'tv_id': i[4]
+                })
+
         for i in res_list:
             if not rez.get(i[4]):
                 rez[i[4]] = []
