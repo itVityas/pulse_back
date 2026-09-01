@@ -73,18 +73,7 @@ async def extract_prices_direct(context: PlaywrightCrawlingContext, product_data
         raise e
 
 
-@router.default_handler
-async def default_handler(context: PlaywrightCrawlingContext) -> None:
-    """Обработчик главной страницы поиска со всеми телевизорами"""
-    parser_logger.info(f"Главная страница загружена успешно. {context.request.url}")
-
-    await asyncio.sleep(2)
-    try:
-        await context.page.wait_for_selector('._1fWhD', timeout=10000)
-    except Exception as e:
-        context.log.warning(f"Селектор '._1fWhD' не найден: {e}")
-        parser_logger.warning("Селектор '._1fWhD' не найден, продолжаем без него")
-
+async def close_add(context: PlaywrightCrawlingContext) -> None:
     # Проверка на явную блокировку/капчу
     content_snapshot = await context.page.content()
     if "Капча" in content_snapshot or "SmartCaptcha" in content_snapshot or "captcha" in context.page.url:
@@ -112,28 +101,66 @@ async def default_handler(context: PlaywrightCrawlingContext) -> None:
         context.log.info("Окно авторизации не появилось, продолжаем работу.")
         parser_logger.info("Окно авторизации не появилось, продолжаем работу.")
 
+
+@router.default_handler
+async def default_handler(context: PlaywrightCrawlingContext) -> None:
+    """Обработчик главной страницы поиска со всеми телевизорами"""
+    parser_logger.info(f"Главная страница загружена успешно. {context.request.url}")
+
+    await asyncio.sleep(2)
+    try:
+        await context.page.wait_for_selector('._1fWhD', timeout=10000)
+    except Exception as e:
+        context.log.warning(f"Селектор '._1fWhD' не найден: {e}")
+        parser_logger.warning("Селектор '._1fWhD' не найден, продолжаем без него")
+
+    await close_add(context)
     scroll_attempts = 0
     if MAXPASS != -1:
         max_scrolls = MAXPASS
     else:
         max_scrolls = 2_147_483_647
+    unique_urls = set()
+    attemps = 0
     while scroll_attempts < max_scrolls:
         try:
             # await context.page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
             try:
                 # Прокрутка с таймаутом
                 await asyncio.wait_for(
-                    context.page.evaluate("window.scrollBy(0, 1500)"),
-                    timeout=5.0
+                    # context.page.evaluate("window.scrollBy(0, 1500)"),
+                    context.page.evaluate("window.scrollBy(0, window.innerHeight * 0.8)"),
+                    timeout=20.0
                 )
             except asyncio.TimeoutError:
                 parser_logger.warning("Прокрутка зависла, продолжаем")
 
-            await context.enqueue_links(
-                selector='a[data-auto="snippet-link"]',
-                label='PRODUCT',
-            )
+            print('get content')
+            await asyncio.sleep(20)
+            await close_add(context)
+
+            links_elements = await context.page.locator('a[data-auto="snippet-link"]').all()
+            print('Links', len(links_elements))
+            if len(links_elements) == 0:
+                attemps += 1
+                parser_logger.warning("Ссылки не найдены, продолжаем прокрутку")
+                if attemps > 3:
+                    break
+            for link in links_elements:
+                href = await link.get_attribute('href')
+                if href:
+                    attemps = 0
+                    yandex_card = '/card/'
+                    if yandex_card in href:
+                        full_url = f"https://market.yandex.ru{href}"
+                        if full_url not in unique_urls:
+                            unique_urls.add(full_url)
             scroll_attempts += 1
+            print(len(unique_urls))
+            await context.enqueue_links(
+                    urls=unique_urls,
+                    label='PRODUCT',
+                )
         except Exception as e:
             parser_logger.warning(f"Ошибка прокрутки: {e}")
             print(e)
@@ -280,9 +307,10 @@ async def product_handler(context: PlaywrightCrawlingContext) -> None:
 
 
 class YandexMarketParser:
-    def __init__(self, proxy_list: list, parse_url: str, max_pass: int = -1):
+    def __init__(self, proxy_list: list, parse_url: str, max_pass: int = -1, headless: bool = True):
         self.proxy_list = proxy_list
         self.parse_url = parse_url
+        self.headless = headless
         global MAXPASS
         MAXPASS = max_pass
 
@@ -300,7 +328,7 @@ class YandexMarketParser:
             max_crawl_depth=3,
             retry_on_blocked=True,
             proxy_configuration=proxy_configuration,
-            headless=True,
+            headless=self.headless,
             request_handler=router,
         )
         await crawler.run([self.parse_url])
@@ -314,12 +342,14 @@ if __name__ == '__main__':
         # parse_url='https://market.yandex.ru/catalog--televizory/'
         # parse_url='https://market.yandex.ru/catalog--televizory/26960210/list?hid=90639&rs=eJwz4v7EyMHBIMGg0H-EFQASXQLR'
         parse_url='https://market.yandex.ru/search?text=телевизор',
-        max_pass=30
+        max_pass=40,
+        headless=False
     )
     asyncio.run(parser.parse())
     for i in parser.data:
         if len(i) > 1 and i[0] == 'items':
             for j in i[1]:
                 print(j)
+            print(len(i[1]))
         else:
             print(i)
