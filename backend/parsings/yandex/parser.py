@@ -1,5 +1,6 @@
 import asyncio
 import re
+import random
 
 from crawlee.proxy_configuration import ProxyConfiguration
 from crawlee.crawlers import PlaywrightCrawler, PlaywrightCrawlingContext
@@ -17,22 +18,45 @@ router = Router[PlaywrightCrawlingContext]()
 MAXPASS = -1
 
 
+async def check_captcha(context: PlaywrightCrawlingContext) -> None:
+    """Проверка на капчу
+    """
+    content = await context.page.content()
+    if "Капча" in content or "SmartCaptcha" in content or "captcha" in context.page.url.lower():
+        return True
+    return False
+
+
+async def scroll_page(context: PlaywrightCrawlingContext) -> None:
+    """Прокрутка страницы для подгрузки товаров
+    """
+    if await check_captcha(context):
+        raise Exception("Капча обнаружена")
+    operation = random.randint(0, 1)
+    if operation == 0:
+        await context.page.evaluate("window.scrollBy(0, window.innerHeight * 0.8)")
+    elif operation == 1:
+        await context.page.keyboard.press("PageDown")
+    await context.page.mouse.wheel(0, random.randint(600, 1200))
+    await asyncio.sleep(random.uniform(1.5, 5))
+    try:
+        await context.page.wait_for_load_state('networkidle', timeout=10000)
+    except Exception as e:
+        parser_logger.info(f"Таймаут ожидания load_state: {e}")
+
+
 def extract_currency_symbol(price_text: str) -> str:
     """Извлечение символа валюты из текста цены"""
-    # Удаляем цифры, пробелы, точки, запятые и другие разделители
-    # Оставляем только символы валют и буквы
     currency_pattern = r'[₽$€£¥]|руб|RUB|USD|EUR'
     match = re.search(currency_pattern, price_text)
     if match:
         return match.group(0)
 
-    # Если не нашли, пробуем найти любой нецифровой символ,
-    # который не является пробелом или разделителем
     cleaned = re.sub(r'[\d\s.,]', '', price_text)
     if cleaned:
         return cleaned.strip()
 
-    return '₽'  # По умолчанию рубли
+    return '₽'
 
 
 async def extract_prices_direct(context: PlaywrightCrawlingContext, product_data: dict) -> None:
@@ -74,12 +98,11 @@ async def extract_prices_direct(context: PlaywrightCrawlingContext, product_data
 
 
 async def close_add(context: PlaywrightCrawlingContext) -> None:
+    """Закрытие поп-up окна авторизации при необходимости"""
     # Проверка на явную блокировку/капчу
-    content_snapshot = await context.page.content()
-    if "Капча" in content_snapshot or "SmartCaptcha" in content_snapshot or "captcha" in context.page.url:
-        context.log.error("⚠️ Внимание: Яндекс выкатил Капчу. Требуется смена IP (прокси) или сервис разгадывания.")
-        parser_logger.error("⚠️ Внимание: Яндекс выкатил Капчу. Требуется смена IP (прокси) или сервис разгадывания.")
-        return
+    captcha = await check_captcha(context)
+    if captcha:
+        raise Exception("Капча обнаружена")
 
     # Закрываем окно авторизации, если появилось
     try:
@@ -92,13 +115,11 @@ async def close_add(context: PlaywrightCrawlingContext) -> None:
         if await close_button.count() > 0:
             await close_button.first.click(timeout=2000)
             await asyncio.sleep(1)
-            context.log.info("✅ Окно авторизации закрыто")
             parser_logger.info("✅ Окно авторизации закрыто")
     except Exception:
         # Игнорируем, если окна нет
         # Если за 3 секунды окно не появилось, Playwright выбросит TimeoutError.
         # Мы его игнорируем и идем дальше парсить товары.
-        context.log.info("Окно авторизации не появилось, продолжаем работу.")
         parser_logger.info("Окно авторизации не появилось, продолжаем работу.")
 
 
@@ -108,38 +129,43 @@ async def default_handler(context: PlaywrightCrawlingContext) -> None:
     parser_logger.info(f"Главная страница загружена успешно. {context.request.url}")
 
     await asyncio.sleep(2)
-    try:
-        await context.page.wait_for_selector('._1fWhD', timeout=10000)
-    except Exception as e:
-        context.log.warning(f"Селектор '._1fWhD' не найден: {e}")
-        parser_logger.warning("Селектор '._1fWhD' не найден, продолжаем без него")
 
     await close_add(context)
-    scroll_attempts = 0
+    goods_find = 0
     if MAXPASS != -1:
-        max_scrolls = MAXPASS
+        max_goods = MAXPASS
     else:
-        max_scrolls = 2_147_483_647
+        max_goods = 2_147_483_647
     unique_urls = set()
     attemps = 0
-    while scroll_attempts < max_scrolls:
+    while goods_find < max_goods:
         try:
             # await context.page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+            # Проверяем, жива ли страница
+            try:
+                await context.page.evaluate("1")
+            except Exception as e:
+                parser_logger.warning("Страница закрыта, прерываем прокрутку" + e)
+                break
             try:
                 # Прокрутка с таймаутом
-                await asyncio.wait_for(
-                    # context.page.evaluate("window.scrollBy(0, 1500)"),
-                    context.page.evaluate("window.scrollBy(0, window.innerHeight * 0.8)"),
-                    timeout=20.0
-                )
+                # await asyncio.wait_for(
+                #     # context.page.evaluate("window.scrollBy(0, 1500)"),
+                #     context.page.evaluate("window.scrollBy(0, window.innerHeight * 0.8)"),
+                #     timeout=20.0
+                # )
+                # await context.page.evaluate("window.scrollBy(0, window.innerHeight * 0.8)")
+                await scroll_page(context)
             except asyncio.TimeoutError:
                 parser_logger.warning("Прокрутка зависла, продолжаем")
+            except Exception as e:
+                parser_logger.warning(f"Ошибка при прокрутке: {e}")
+                break
 
             print('get content')
-            await asyncio.sleep(20)
             await close_add(context)
 
-            links_elements = await context.page.locator('a[data-auto="snippet-link"]').all()
+            links_elements = await context.page.locator('a[href*="/card/"]').all()
             print('Links', len(links_elements))
             if len(links_elements) == 0:
                 attemps += 1
@@ -155,15 +181,18 @@ async def default_handler(context: PlaywrightCrawlingContext) -> None:
                         full_url = f"https://market.yandex.ru{href}"
                         if full_url not in unique_urls:
                             unique_urls.add(full_url)
-            scroll_attempts += 1
-            print(len(unique_urls))
-            await context.enqueue_links(
-                    urls=unique_urls,
-                    label='PRODUCT',
-                )
+                    goods_find = len(unique_urls)
+                    if goods_find >= max_goods:
+                        break
         except Exception as e:
-            parser_logger.warning(f"Ошибка прокрутки: {e}")
+            parser_logger.warning(f"Ошибка обработки: {e}")
             print(e)
+    print(len(unique_urls))
+    parser_logger.info(f"Найдено уникальных товаров: {len(unique_urls)}")
+    await context.enqueue_links(
+            urls=unique_urls,
+            label='PRODUCT',
+        )
 
 
 @router.handler('PRODUCT')
@@ -330,9 +359,36 @@ class YandexMarketParser:
             proxy_configuration=proxy_configuration,
             headless=self.headless,
             request_handler=router,
+            browser_type='chrome',
+            # browser_type='chromium',
+            browser_new_context_options={
+                'viewport': {'width': 1920, 'height': 1080},
+                'user_agent': '...',
+                'locale': 'ru-RU',
+                'timezone_id': 'Europe/Moscow',
+                'java_script_enabled': True,
+                'extra_http_headers': {
+                    'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                },
+                'screen': {'width': 1280, 'height': 800},
+            },
+            browser_launch_options={
+                'args': [
+                    '--disable-blink-features=AutomationControlled',
+                    '--disable-dev-shm-usage',
+                    '--no-sandbox',
+                    '--disable-setuid-sandbox',
+                    '--disable-web-security',
+                    '--disable-features=IsolateOrigins,site-per-process',
+                    '--disable-infobars',
+                    '--disable-notifications',
+                ]
+            },
         )
         await crawler.run([self.parse_url])
-        self.data = await crawler.get_data()
+        dataset = await crawler.get_data()
+        self.data = dataset
 
 
 if __name__ == '__main__':
@@ -346,10 +402,5 @@ if __name__ == '__main__':
         headless=False
     )
     asyncio.run(parser.parse())
-    for i in parser.data:
-        if len(i) > 1 and i[0] == 'items':
-            for j in i[1]:
-                print(j)
-            print(len(i[1]))
-        else:
-            print(i)
+    print(parser.data.items)
+    print(len(parser.data.items))
