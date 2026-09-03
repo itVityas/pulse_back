@@ -5,6 +5,7 @@ import random
 from crawlee.proxy_configuration import ProxyConfiguration
 from crawlee.crawlers import PlaywrightCrawler, PlaywrightCrawlingContext
 from crawlee.router import Router
+from crawlee import Glob
 from loguru import logger
 
 from settings.loguru_conf import setup_logger
@@ -33,6 +34,7 @@ async def scroll_page(context: PlaywrightCrawlingContext) -> None:
     if await check_captcha(context):
         raise Exception("Капча обнаружена")
     operation = random.randint(0, 1)
+    operation = 1
     if operation == 0:
         await context.page.evaluate("window.scrollBy(0, window.innerHeight * 0.8)")
     elif operation == 1:
@@ -112,6 +114,7 @@ async def close_add(context: PlaywrightCrawlingContext) -> None:
             context.page.locator('button:has-text("Закрыть")')
         )
 
+        print(await close_button.count())
         if await close_button.count() > 0:
             await close_button.first.click(timeout=2000)
             await asyncio.sleep(1)
@@ -129,8 +132,8 @@ async def default_handler(context: PlaywrightCrawlingContext) -> None:
     parser_logger.info(f"Главная страница загружена успешно. {context.request.url}")
 
     await asyncio.sleep(2)
-
     await close_add(context)
+
     goods_find = 0
     if MAXPASS != -1:
         max_goods = MAXPASS
@@ -184,20 +187,25 @@ async def default_handler(context: PlaywrightCrawlingContext) -> None:
                     goods_find = len(unique_urls)
                     if goods_find >= max_goods:
                         break
+            print('scroll_rez:', len(unique_urls))
         except Exception as e:
             parser_logger.warning(f"Ошибка обработки: {e}")
             print(e)
-    print(len(unique_urls))
+    print('уникальные: ', len(unique_urls))
     parser_logger.info(f"Найдено уникальных товаров: {len(unique_urls)}")
     await context.enqueue_links(
-            urls=unique_urls,
-            label='PRODUCT',
+            urls=list(unique_urls),
+            label='yandex_product',
+            include=[Glob('https://market.yandex.ru/card/**')],
         )
 
 
-@router.handler('PRODUCT')
+@router.handler('yandex_product')
 async def product_handler(context: PlaywrightCrawlingContext) -> None:
     """Обработчик страницы товара"""
+    if context.request.url.find('/card/') == -1:
+        parser_logger.warning(f"URL не является карточкой товара: {context.request.url}")
+        return
     parser_logger.info(f"Страница товара загружена. {context.request.url}")
     await asyncio.sleep(2)
 
@@ -386,7 +394,7 @@ class YandexMarketParser:
                 ]
             },
         )
-        await crawler.run([self.parse_url])
+        await crawler.run([self.parse_url], purge_request_queue=True)
         dataset = await crawler.get_data()
         self.data = dataset
 
@@ -398,7 +406,7 @@ if __name__ == '__main__':
         # parse_url='https://market.yandex.ru/catalog--televizory/'
         # parse_url='https://market.yandex.ru/catalog--televizory/26960210/list?hid=90639&rs=eJwz4v7EyMHBIMGg0H-EFQASXQLR'
         parse_url='https://market.yandex.ru/search?text=телевизор',
-        max_pass=40,
+        max_pass=50,
         headless=False
     )
     asyncio.run(parser.parse())
