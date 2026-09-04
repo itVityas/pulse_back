@@ -33,12 +33,18 @@ async def scroll_page(context: PlaywrightCrawlingContext) -> None:
     """
     if await check_captcha(context):
         raise Exception("Капча обнаружена")
-    operation = random.randint(0, 1)
-    operation = 1
+    operation = random.randint(0, 2)
     if operation == 0:
-        await context.page.evaluate("window.scrollBy(0, window.innerHeight * 0.8)")
+        await context.page.evaluate("window.scrollBy({0, window.innerHeight * 0.8, behavior: 'smooth')")
+        print('scroll')
     elif operation == 1:
         await context.page.keyboard.press("PageDown")
+        print('button')
+    elif operation == 2:
+        x = random.randint(0, 100)
+        y = random.randint(500, 900)
+        print(x, y)
+        await context.page.mouse.wheel(x, y)
     await context.page.mouse.wheel(0, random.randint(600, 1200))
     await asyncio.sleep(random.uniform(1.5, 5))
     try:
