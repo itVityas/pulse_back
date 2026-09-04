@@ -35,20 +35,19 @@ async def scroll_page(context: PlaywrightCrawlingContext) -> None:
         raise Exception("Капча обнаружена")
     operation = random.randint(0, 2)
     if operation == 0:
-        await context.page.evaluate("window.scrollBy({0, window.innerHeight * 0.8, behavior: 'smooth')")
+        await context.page.evaluate("window.scrollBy({0, window.innerHeight * 0.8")
         print('scroll')
     elif operation == 1:
         await context.page.keyboard.press("PageDown")
         print('button')
     elif operation == 2:
-        x = random.randint(0, 100)
+        x = random.randint(1, 100)
         y = random.randint(500, 900)
         print(x, y)
         await context.page.mouse.wheel(x, y)
-    await context.page.mouse.wheel(0, random.randint(600, 1200))
     await asyncio.sleep(random.uniform(1.5, 5))
     try:
-        await context.page.wait_for_load_state('networkidle', timeout=10000)
+        await context.page.wait_for_load_state('networkidle', timeout=20000)
     except Exception as e:
         parser_logger.info(f"Таймаут ожидания load_state: {e}")
 
@@ -120,7 +119,7 @@ async def close_add(context: PlaywrightCrawlingContext) -> None:
             context.page.locator('button:has-text("Закрыть")')
         )
 
-        print(await close_button.count())
+        print('close_button', await close_button.count())
         if await close_button.count() > 0:
             await close_button.first.click(timeout=2000)
             await asyncio.sleep(1)
@@ -385,7 +384,7 @@ class YandexMarketParser:
                     'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
                     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
                 },
-                'screen': {'width': 1280, 'height': 800},
+                'screen': {'width': 1920, 'height': 1080},
             },
             browser_launch_options={
                 'args': [
@@ -412,9 +411,8 @@ if __name__ == '__main__':
         # parse_url='https://market.yandex.ru/catalog--televizory/'
         # parse_url='https://market.yandex.ru/catalog--televizory/26960210/list?hid=90639&rs=eJwz4v7EyMHBIMGg0H-EFQASXQLR'
         parse_url='https://market.yandex.ru/search?text=телевизор',
-        max_pass=50,
+        max_pass=100,
         headless=False
     )
     asyncio.run(parser.parse())
-    print(parser.data.items)
-    print(len(parser.data.items))
+    print('final count:', len(parser.data.items))
