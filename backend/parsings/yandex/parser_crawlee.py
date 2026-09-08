@@ -1,3 +1,5 @@
+# don't work. only 24 items and closed
+
 import asyncio
 import re
 import random
