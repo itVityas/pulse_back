@@ -31,7 +31,7 @@ class YandexParserSelenium:
         self._driver: WebDriver
         self._chrome_options = webdriver.ChromeOptions()
         self._chrome_options.page_load_strategy = 'eager'
-        # self._chrome_options.add_argument('--headless=new')
+        self._chrome_options.add_argument('--headless=new')
         self._chrome_options.add_argument('--incognito')
         self._chrome_options.add_argument('--no-sandbox')
         self._chrome_options.add_argument('--disable-gpu')
@@ -68,7 +68,7 @@ class YandexParserSelenium:
         try:
             self._driver.implicitly_wait(1)
             self._driver.get(self._url)
-            print('load_page')
+            parser_logger.info(f'start parsing: {self._url}')
 
             products = []
             links = set()
@@ -80,12 +80,11 @@ class YandexParserSelenium:
                 # soup = BeautifulSoup(element.get_attribute('outerHTML'), 'html.parser')
                 soup = BeautifulSoup(self._driver.page_source, 'html.parser')
                 a_tags = soup.select('a')
-                print('find tags', len(a_tags))
                 for a_tag in a_tags:
                     link = a_tag.get('href')
                     if link and link not in links and link.find('/card/') != -1:
                         links.add(link)
-                print('find links: ', len(links))
+                parser_logger.debug(f'найдено тегов: {len(links)}')
                 if self._max_items != -1 and len(links) >= self._max_items:
                     break
 
@@ -101,7 +100,6 @@ class YandexParserSelenium:
                         scroll_height = random.randint(200, 500)
                         self._driver.execute_script(f"window.scrollBy(0, {scroll_height});")
                     if scroll_attemps > 10:
-                        print('прокрутка:', new_height, last_height)
                         logger.info('Достигнут конец прокрутки')
                         break
                 else:
@@ -476,7 +474,7 @@ class YandexParserSelenium:
 
 
 if __name__ == '__main__':
-    with YandexParserSelenium(search_text='телевизор', proxy_list=None, max_items=5) as parser:
+    with YandexParserSelenium(search_text='телевизор', proxy_list=None, max_items=200) as parser:
         res = asyncio.run(parser.parse())
         for i in res:
             print(i.get_dict())
