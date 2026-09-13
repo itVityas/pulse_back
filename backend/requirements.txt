@@ -35,3 +35,5 @@ redis==8.0.0
 selenium==4.48.0
 beautifulsoup4==4.15.0
 webdriver-manager==4.1.2
+websockets==16.1.1
+seleniumbase==4.54.4
