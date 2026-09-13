@@ -70,3 +70,24 @@ CELERY_BEAT_NAME=testpulse_celery_beat
 *   **Redis Healthcheck:** Контейнеры Celery (`celery_currency` и `celery_beat`) не запустятся до тех пор, пока Redis полностью не поднимется и не начнет успешно отвечать на команду `ping`.
 *   **Зависимости «на лету»:** При старте бэкенда и фронтенда зависимости (`pip install` и `npm install`) устанавливаются автоматически при каждом запуске контейнера из папок `./backend` и `./pulse_front`.
 *   **Интерактивный фронтенд:** Для фронтенда включены флаги `stdin_open:
+
+
+## 5. Проверка парсинга, отдельный запуск приложения
+**python3 -m  parsings.yandex.parser_selenium** - запуск на линукс после установки зависимостей
+
+vscode включение debugger
+```env
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python Debugger: Current File",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "parsings.yandex.${fileBasenameNoExtension}",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/backend/"
+        }
+    ]
+}
+```
