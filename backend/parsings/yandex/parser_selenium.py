@@ -416,6 +416,7 @@ class YandexParserSelenium:
             )
             if title_element:
                 tv_card.title = title_element.text
+            tv_card.url = link
 
             soup = BeautifulSoup(driver.page_source, 'html.parser')
             labels = soup.find_all('label')

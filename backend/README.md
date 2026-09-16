@@ -18,3 +18,6 @@ python3 scripts/init_db.py
 sudo apt-get install libavif16
 sudo playwright install-deps 
 playwright install установка браузеров для парсинга
+
+seleniumbase
+apt-get install python3-tk python3-dev
