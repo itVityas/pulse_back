@@ -1,11 +1,13 @@
 import random
 from time import sleep
 import re
-from typing import Optional, List
+from typing import Optional, List, Tuple
 
 from bs4 import BeautifulSoup
 from seleniumbase import SB
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from loguru import logger
 
 from settings.loguru_conf import setup_logger
@@ -71,13 +73,96 @@ class YandexParserSelenium:
         except Exception as e:
             parser_logger.warning('parse_error:', str(e))
 
+    def parse_price(self, soup: BeautifulSoup) -> Tuple[Optional[int], Optional[str]]:
+        """
+        Извлекает цену и валюту из карточки товара.
+
+        Returns:
+            Tuple[Optional[int], Optional[str]]: (цена как целое число, символ валюты)
+            Например: (64999, '₽') или (None, None), если цена не найдена.
+        """
+        try:
+            price_tag = soup.select_one('div.product-buy__price')
+            if not price_tag:
+                parser_logger.warning('Не найден блок с ценой (div.product-buy__price)')
+                return None, None
+
+            raw_text = price_tag.get_text(strip=True)
+            cleaned = re.sub(r'[\s\u00a0\u2009\u202f]+', '', raw_text)
+
+            # Ищем число и валютный символ
+            # \d+ — цифры; [₽$€¥£] — распространённые символы валют
+            match = re.match(r'^(\d+)([^\d]*)$', cleaned)
+            if not match:
+                parser_logger.warning(f'Не удалось распарсить цену: {raw_text!r}')
+                return None, None
+
+            price = int(match.group(1))
+            currency = match.group(2).strip()
+
+            return price, currency
+
+        except Exception as e:
+            parser_logger.warning('parse_price_error:', str(e))
+            return None, None
+
+    def parse_description(self, soup: BeautifulSoup) -> Optional[str]:
+        """
+        Извлекает описание товара из карточки.
+
+        Обрабатывает:
+        - неразрывные пробелы (\xa0) → обычный пробел
+        - теги <br> → символ переноса строки
+        - лишние пустые строки и отступы
+        """
+        try:
+            desc_tag = soup.select_one('p.product-card-description__text-description')
+            if not desc_tag:
+                parser_logger.warning('Не найден блок описания товара')
+                return None
+
+            for br in desc_tag.find_all('br'):
+                br.replace_with('\n')
+
+            text = desc_tag.get_text()
+            text = text.replace('\xa0', ' ')
+            text = re.sub(r'[ \t]+', ' ', text)
+            lines = [line.strip() for line in text.split('\n')]
+            lines = [line for line in lines if line]
+            text = '\n'.join(lines)
+
+            return text or None
+
+        except Exception as e:
+            parser_logger.warning('parse_description_error:', str(e))
+            return None
+
     def parse_product(self, driver, url) -> Optional[TVCard]:
         try:
             tv_card = TVCard()
-            driver.uc_open_with_tab(url)
+            driver.uc_open_with_reconnect(url)
             tv_card.url = url
             h1_element = driver.find_element(By.CSS_SELECTOR, 'h1.product-card-top__title')
             tv_card.title = h1_element.text
+
+            price, currency = self.parse_price(BeautifulSoup(driver.get_page_source(), 'html.parser'))
+            tv_card.full_price = price
+            tv_card.currency = currency
+
+            button = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable(
+                    (By.CSS_SELECTOR, 'a.product-card-top__specs-more')
+                )
+            )
+            driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", button)
+            sleep(random.uniform(0.5, 1.5))
+            button.click()
+            sleep(random.uniform(2.0, 4.0))
+
+            soup = BeautifulSoup(driver.get_page_source(), 'html.parser')
+            desc = self.parse_description(soup)
+            tv_card.description = desc
+
             return tv_card
         except Exception as e:
             parser_logger.warning('parse_product_error:', str(e))
