@@ -19,7 +19,7 @@ parser_logger = logger.bind(log_name="dns")
 
 
 class YandexParserSelenium:
-    def __init__(self, search_text, proxy_list=None, max_items=50):
+    def __init__(self, proxy_list=None, max_items=50):
         self._url = 'https://www.dns-shop.ru/catalog/17a8ae4916404e77/televizory/'
         self._proxy_list = proxy_list
         self._max_items = max_items
@@ -248,7 +248,7 @@ class YandexParserSelenium:
 
 
 if __name__ == '__main__':
-    parser = YandexParserSelenium(search_text='телевизор', proxy_list=None, max_items=200)
+    parser = YandexParserSelenium(proxy_list=None, max_items=200)
     res = parser.parse()
     if res:
         for i in res:
