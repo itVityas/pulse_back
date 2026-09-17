@@ -137,6 +137,67 @@ class YandexParserSelenium:
             parser_logger.warning('parse_description_error:', str(e))
             return None
 
+    def expand_characteristics(self, driver) -> bool:
+        """Кликает 'Все характеристики', если кнопка есть."""
+        try:
+            buttons = driver.find_elements(
+                By.CSS_SELECTOR, 'button.product-characteristics__expand'
+            )
+            if not buttons:
+                return True  # нечего раскрывать
+
+            btn = buttons[0]
+            driver.execute_script(
+                "arguments[0].scrollIntoView({block: 'center'});", btn
+            )
+            sleep(random.uniform(0.5, 1.2))
+            btn.click()
+            sleep(random.uniform(1.5, 3.0))
+            return True
+        except Exception as e:
+            parser_logger.warning('expand_characteristics_error:', str(e))
+            return False
+
+    def parse_characteristics(self, soup: BeautifulSoup) -> dict:
+        """
+        Извлекает все характеристики со страницы товара в плоский словарь.
+        Returns:
+            dict: {название характеристики: значение}
+        """
+        specs = {}
+        try:
+            items = soup.select('li.product-characteristics__spec')
+            if not items:
+                parser_logger.warning('Не найдены характеристики товара')
+                return specs
+
+            for li in items:
+                title_tag = li.select_one('.product-characteristics__spec-title')
+                value_tag = li.select_one('.product-characteristics__spec-value')
+
+                if not title_tag or not value_tag:
+                    continue
+
+                key = self._clean_text(title_tag.get_text())
+                value = self._clean_text(value_tag.get_text())
+
+                if key and value:
+                    specs[key] = value
+
+        except Exception as e:
+            parser_logger.warning('parse_characteristics_error:', str(e))
+
+        return specs
+
+    @staticmethod
+    def _clean_text(text: str) -> str:
+        """Нормализует текст: \xa0 → пробел, схлопывает пробелы, strip."""
+        if not text:
+            return ''
+        text = text.replace('\xa0', ' ')
+        text = re.sub(r'\s+', ' ', text)
+        return text.strip()
+
     def parse_product(self, driver, url) -> Optional[TVCard]:
         try:
             tv_card = TVCard()
@@ -163,13 +224,31 @@ class YandexParserSelenium:
             desc = self.parse_description(soup)
             tv_card.description = desc
 
+            self.expand_characteristics(driver)
+            soup = BeautifulSoup(driver.get_page_source(), 'html.parser')
+            characteristics = self.parse_characteristics(soup)
+            for key, value in characteristics.items():
+                l_key = key.lower()
+                if l_key.find('диагональ экрана (дюйм)') != -1:
+                    tv_card.diagonal = value
+                elif l_key.find('разрешение экрана') != -1:
+                    tv_card.screen_resolution = value
+                elif l_key.find('технология экрана') != -1:
+                    tv_card.matrix = value
+                elif l_key.find('операционная система') != -1:
+                    tv_card.os = value
+                elif l_key.find('частота обновления экрана') != -1:
+                    tv_card.refresh_rate = value
+                elif l_key.find('модель') != -1:
+                    tv_card.name = value
+
             return tv_card
         except Exception as e:
             parser_logger.warning('parse_product_error:', str(e))
 
 
 if __name__ == '__main__':
-    parser = YandexParserSelenium(search_text='телевизор', proxy_list=None, max_items=5)
+    parser = YandexParserSelenium(search_text='телевизор', proxy_list=None, max_items=200)
     res = parser.parse()
     if res:
         for i in res:

@@ -10,6 +10,7 @@ class TVCard:
                     brand: str = None,
                     matrix: str = None,
                     diagonal: int = None,
+                    refresh_rate: int = None,
                     currency: str = None,
                     full_price=None,
                     discount_price=None,
@@ -24,6 +25,7 @@ class TVCard:
         self.brand = brand
         self.matrix = matrix
         self.diagonal = diagonal
+        self.refresh_rate = refresh_rate
         self.full_price = full_price
         self.discount_price = discount_price
         self.card_price = card_price
@@ -40,6 +42,7 @@ class TVCard:
             'brand': self.brand,
             'matrix': self.matrix,
             'diagonal': self.diagonal,
+            'refresh_rate': self.refresh_rate,
             'full_price': self.full_price,
             'discount_price': self.discount_price,
             'card_price': self.card_price,
