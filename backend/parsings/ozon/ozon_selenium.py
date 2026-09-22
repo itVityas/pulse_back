@@ -1,13 +1,11 @@
 import random
 from time import sleep
 import re
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Dict
 
 from bs4 import BeautifulSoup
-from seleniumbase import SB, Driver
+from seleniumbase import SB
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from loguru import logger
 
 from settings.loguru_conf import setup_logger
@@ -27,7 +25,7 @@ class OzonParserSelenium:
     def parse(self) -> List[TVCard]:
         try:
             # with SB(uc=True, incognito=True, locale="ru") as driver:
-            with Driver(uc=True, incognito=True, locale="ru") as driver:
+            with SB(uc=True, incognito=True, locale="ru") as driver:
                 driver.uc_open_with_reconnect(self._url)
                 parser_logger.info(f'start parsing: {self._url}')
 
@@ -38,7 +36,6 @@ class OzonParserSelenium:
                 while True:
                     soup = BeautifulSoup(driver.get_page_source(), 'html.parser')
                     a_tags = soup.select('a[href*="/product/"]')
-                    print('a_tags:', len(a_tags))
                     for a_tag in a_tags:
                         link = a_tag.get('href')
                         if link and link not in links and link.find('/product/') != -1:
@@ -65,7 +62,6 @@ class OzonParserSelenium:
                         last_height = new_height
                         scroll_attemps = 0
 
-                print('links:', len(links))
                 for link in links:
                     tv_card = self.parse_product(driver, 'https://ozon.ru' + link)
                     if tv_card:
@@ -79,8 +75,8 @@ class OzonParserSelenium:
         Возвращает (цена_float, код_валюты) или None, если не найдено.
         Пример: ('478,71 BYN') -> (478.71, 'BYN')
         """
-        PRICE_RE = re.compile(r'(\d[\d\s\u00a0]*[.,]?\d*)\s*([A-Za-zА-Яа-я]{2,4})|[₽$€¥])')
         try:
+            PRICE_RE = re.compile(r'(\d[\d\s\u00a0]*[.,]?\d*)\s*([A-Za-zА-Яа-я]{2,4})|[₽$€¥]')
             driver.wait_for_element('[data-widget="webPrice"]', timeout=15)
             # raw = driver.get_text('[data-widget="webPrice"] .tsHeadline600Large').strip()
             raw = driver.get_text(
@@ -91,7 +87,7 @@ class OzonParserSelenium:
             return None
 
         # Иногда внутри пробел-разделитель тысяч — убираем
-        raw = raw.replace('\u00a0', ' ').strip()
+        raw = raw.replace('\u00a0', ' ').replace('\u2009', ' ').strip()
 
         match = PRICE_RE.search(raw)
         if not match:
@@ -197,6 +193,54 @@ class OzonParserSelenium:
             parser_logger.error(f'parse_description_error: {e}')
             return None
 
+    def parse_characteristics(self, driver) -> Dict[str, str]:
+        """
+        Парсит блок #section-characteristics и возвращает словарь
+        {название_характеристики: значение}.
+        """
+        soup = BeautifulSoup(driver.get_page_source(), 'html.parser')
+
+        section = soup.select_one('#section-characteristics')
+        if not section:
+            parser_logger.warning('characteristics_section_not_found')
+            return {}
+
+        specs: Dict[str, str] = {}
+
+        for dl in section.select('dl.pdp_j8a'):
+            dt = dl.find('dt')
+            dd = dl.find('dd')
+            if not dt or not dd:
+                continue
+
+            # --- Название ---
+            name_span = dt.select_one('span.pdp_a8j')
+            if not name_span:
+                continue
+            # Отрезаем вложенные блоки с кнопкой-подсказкой (иконка "?"),
+            # оставляем только текст названия.
+            for extra in name_span.select('div, button, svg'):
+                extra.decompose()
+            name = name_span.get_text(strip=True)
+            if not name:
+                continue
+
+            # --- Значение ---
+            # Собираем текст со всех узлов, но ссылки берём как их текст,
+            # а разделители ", " сохраняем.
+            # Для этого используем get_text() с separator='' —
+            # теги <a> и <span>, </span> дадут правильную строку.
+            value = dd.get_text(separator='', strip=True)
+
+            # Нормализация: убрать возможные множественные пробелы
+            value = re.sub(r'\s+', ' ', value).strip()
+
+            if value:
+                specs[name] = value
+
+        parser_logger.debug(f'characteristics_parsed: {len(specs)} items')
+        return specs
+
     def parse_product(self, driver, url) -> Optional[TVCard]:
         try:
             tv_card = TVCard()
@@ -205,15 +249,28 @@ class OzonParserSelenium:
 
             h1_element = driver.find_element(By.CSS_SELECTOR, 'h1.pdp_i5b.tsHeadline550Medium')
             tv_card.title = h1_element.text
-            print(tv_card.title)
 
             price, currency = self.get_price(driver)
             tv_card.full_price = price
             tv_card.currency = currency
-            print(price, currency)
 
             tv_card.description = self.parse_description(driver)
-            print(tv_card.description)
+
+            characteristics = self.parse_characteristics(driver)
+            for key, value in characteristics.items():
+                l_key = key.lower()
+                if l_key.find('диагональ экрана, дюймы') != -1:
+                    tv_card.diagonal = value
+                elif l_key.find('разрешение') != -1:
+                    tv_card.screen_resolution = value
+                elif l_key.find('технология матрицы') != -1:
+                    tv_card.matrix = value
+                elif l_key.find('операционная система') != -1:
+                    tv_card.os = value
+                elif l_key.find('частота обновления') != -1:
+                    tv_card.refresh_rate = value
+                elif l_key.find('бренд') != -1:
+                    tv_card.brand = value
 
             return tv_card
         except Exception as e:
@@ -221,7 +278,7 @@ class OzonParserSelenium:
 
 
 if __name__ == '__main__':
-    parser = OzonParserSelenium(proxy_list=None, max_items=5)
+    parser = OzonParserSelenium(proxy_list=None, max_items=26)
     res = parser.parse()
     if res:
         for i in res:
