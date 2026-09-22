@@ -5,6 +5,8 @@ from typing import Optional, List, Tuple, Dict
 
 from bs4 import BeautifulSoup
 from seleniumbase import SB, Driver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from loguru import logger
 
@@ -38,7 +40,9 @@ class WBParserSelenium:
                     print('a_tags:', len(a_tags))
                     for a_tag in a_tags:
                         link = a_tag.get('href')
-                        if link and link not in links and link.find('/catalog/') != -1:
+                        if link and link not in links and (
+                                    link.find('/catalog/') != -1 and link.endswith('detail.aspx')
+                                ):
                             links.add(link)
                             if len(links) > self._max_items:
                                 break
@@ -63,13 +67,87 @@ class WBParserSelenium:
                         scroll_attemps = 0
 
                 print('links:', len(links))
-                # for link in links:
-                #     tv_card = self.parse_product(driver, 'https://www.wildberries.ru/' + link)
-                #     if tv_card:
-                #         products.append(tv_card)
+                for link in links:
+                    tv_card = self.parse_product(driver, link)
+                    if tv_card:
+                        products.append(tv_card)
                 return products
         except Exception as e:
             parser_logger.error('parse_error:', str(e))
+
+    def parse_prices(self, driver: SB) -> Tuple[Optional[str], Optional[str], Optional[str]]:
+        """
+        Возвращает (final_price, old_price, currency).
+        Цены — строки только из цифр, валюта — символ ('₽', '$', '€').
+        """
+        final_text = ''
+        old_text = ''
+
+        try:
+            final_el = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located(
+                    (By.CSS_SELECTOR, 'ins[class*="priceBlockFinalPrice"]')
+                )
+            )
+            final_text = final_el.text.strip()
+        except Exception as e:
+            parser_logger.warning(f'final_price_not_found: {e}')
+
+        try:
+            old_el = driver.find_element(
+                By.CSS_SELECTOR, 'span[class*="priceBlockOldPrice"]'
+            )
+            old_text = old_el.text.strip()
+        except Exception:
+            # Старой цены может не быть (нет скидки) — это не ошибка
+            old_text = ''
+
+        final_price, currency = self._extract_price_and_currency(final_text)
+        old_price, _ = self._extract_price_and_currency(old_text)
+        return final_price, old_price, currency
+
+
+    @staticmethod
+    def _extract_price_and_currency(text: str) -> Tuple[Optional[str], Optional[str]]:
+        """
+        '48\u00a0690\u00a0₽'  ->  ('48690', '₽')
+        '68 385 ₽'            ->  ('68385', '₽')
+        '1 234,56 €'          ->  ('1234,56', '€')
+        """
+        if not text:
+            return None, None
+
+        # число (цифры + пробелы/nbsp + запятая или точка) и символ валюты
+        match = re.search(r'([\d\s\u00A0.,]+?)\s*([^\d\s\u00A0.,]+)\s*$', text)
+        if not match:
+            return None, None
+
+        price = re.sub(r'[\s\u00A0]+', '', match.group(1)).strip('.,')
+        currency = match.group(2).strip()
+        return price, currency
+
+    def parse_product(self, driver: SB, url: str) -> Optional[TVCard]:
+        try:
+            tv_card = TVCard()
+            driver.uc_open_with_reconnect(url)
+            tv_card.url = url
+
+            title_el = WebDriverWait(driver, 15).until(
+                EC.visibility_of_element_located(
+                    (By.CSS_SELECTOR, 'h2[class*="productTitle"]')
+                )
+            )
+            tv_card.title = title_el.text.strip()
+
+            price, old_price, currency = self.parse_prices(driver)
+            tv_card.discount_price = price
+            tv_card.full_price = old_price
+            tv_card.currency = currency if currency else '₽'
+
+            return tv_card
+        except Exception as e:
+            parser_logger.error(f'parse_product_error: {e}')
+            return None
 
 
 if __name__ == '__main__':
