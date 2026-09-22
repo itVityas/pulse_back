@@ -18,14 +18,14 @@ parser_logger = logger.bind(log_name="ozon")
 
 class OzonParserSelenium:
     def __init__(self, proxy_list=None, max_items=50):
-        self._url = 'https://ozon.ru/category/televizory-15528/'
+        self._url = 'https://ozon.by/category/televizory-15528/'
         self._proxy_list = proxy_list
         self._max_items = max_items
 
     def parse(self) -> List[TVCard]:
         try:
             # with SB(uc=True, incognito=True, locale="ru") as driver:
-            with SB(uc=True, incognito=True, locale="ru") as driver:
+            with SB(uc=True, incognito=True, locale="ru", locale_code="ru") as driver:
                 driver.uc_open_with_reconnect(self._url)
                 parser_logger.info(f'start parsing: {self._url}')
 
@@ -63,7 +63,7 @@ class OzonParserSelenium:
                         scroll_attemps = 0
 
                 for link in links:
-                    tv_card = self.parse_product(driver, 'https://ozon.ru' + link)
+                    tv_card = self.parse_product(driver, 'https://ozon.by' + link)
                     if tv_card:
                         products.append(tv_card)
                 return products
