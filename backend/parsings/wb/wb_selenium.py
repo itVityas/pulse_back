@@ -4,7 +4,7 @@ import re
 from typing import Optional, List, Tuple, Dict
 
 from bs4 import BeautifulSoup
-from seleniumbase import SB, Driver
+from seleniumbase import SB
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
@@ -26,8 +26,9 @@ class WBParserSelenium:
 
     def parse(self) -> List[TVCard]:
         try:
-            with Driver(uc=True, incognito=True, locale="ru", locale_code="ru") as driver:
+            with SB(uc=True, incognito=True, locale="ru", locale_code="ru") as driver:
                 driver.uc_open_with_reconnect(self._url)
+                driver.sleep(10)
                 parser_logger.info(f'start parsing: {self._url}')
 
                 products = []
@@ -73,7 +74,7 @@ class WBParserSelenium:
                         products.append(tv_card)
                 return products
         except Exception as e:
-            parser_logger.error('parse_error:', str(e))
+            parser_logger.error(f'parse_error: {e}')
 
     def parse_prices(self, driver: SB) -> Tuple[Optional[str], Optional[str], Optional[str]]:
         """
@@ -106,7 +107,6 @@ class WBParserSelenium:
         old_price, _ = self._extract_price_and_currency(old_text)
         return final_price, old_price, currency
 
-
     @staticmethod
     def _extract_price_and_currency(text: str) -> Tuple[Optional[str], Optional[str]]:
         """
@@ -126,6 +126,103 @@ class WBParserSelenium:
         currency = match.group(2).strip()
         return price, currency
 
+    def open_characteristics(self, driver: SB) -> Dict:
+        """
+        Кликает по кнопке "Характеристики и описание", дожидается открытия
+        бокового меню и возвращает dict с полями для TVCard.
+        """
+        data: Dict = {
+            'description': None,
+            'os': None,
+            'screen_resolution': None,
+            'brand': None,
+            'matrix': None,
+            'diagonal': None,
+            'refresh_rate': None,
+        }
+
+        try:
+            # 1. Кнопка "Характеристики и описание"
+            button = WebDriverWait(driver, 15).until(
+                EC.element_to_be_clickable(
+                    (By.CSS_SELECTOR, 'button[class*="btnDetail"], a[class*="btnDetail"]')
+                )
+            )
+            driver.execute_script(
+                "arguments[0].scrollIntoView({block: 'center'});", button
+            )
+            sleep(random.uniform(0.4, 0.8))
+            try:
+                button.click()
+            except Exception:
+                # иногда клик перехватывается оверлеем — жмём через JS
+                driver.execute_script("arguments[0].click();", button)
+
+            # 2. Панель с характеристиками
+            WebDriverWait(driver, 15).until(
+                EC.presence_of_element_located(
+                    (By.CSS_SELECTOR, 'div[class*="detailsDesktopWrapper"]')
+                )
+            )
+            sleep(random.uniform(0.6, 1.0))  # даём таблицам отрисоваться
+
+            soup = BeautifulSoup(driver.get_page_source(), 'html.parser')
+            panel = soup.select_one('div[class*="detailsDesktopWrapper"]')
+            if not panel:
+                parser_logger.warning('panel_not_found')
+                return data
+
+            # 3. Собираем все пары "характеристика -> значение"
+            specs: Dict[str, str] = {}
+            for table in panel.select('table'):
+                for row in table.select('tr'):
+                    key_el = row.select_one('th')
+                    val_el = row.select_one('td')
+                    if not key_el or not val_el:
+                        continue
+                    key = key_el.get_text(' ', strip=True)
+                    val = val_el.get_text(' ', strip=True)
+                    if key and val:
+                        specs[key] = val
+
+            # 4. Описание
+            desc_el = panel.select_one('section#section-description p')
+            if desc_el:
+                data['description'] = desc_el.get_text('\n', strip=True)
+
+            # 5. Маппинг в поля TVCard
+            data['os'] = specs.get('Операционная система')
+            data['screen_resolution'] = specs.get('Разрешение экрана')
+            data['matrix'] = specs.get('Тип матрицы')
+            data['brand'] = (
+                specs.get('Бренд')
+                or specs.get('Производитель')
+                or specs.get('Марка')
+            )
+
+            # Диагональ: '65"' -> 65
+            diag_raw = specs.get('Диагональ')
+            if diag_raw:
+                m = re.search(r'\d+', diag_raw)
+                if m:
+                    data['diagonal'] = int(m.group())
+
+            # Частота обновления: '60 Гц' -> 60
+            rr_raw = (
+                specs.get('Частота смены кадров (Гц)')
+                or specs.get('Частота обновления')
+            )
+            if rr_raw:
+                m = re.search(r'\d+', rr_raw)
+                if m:
+                    data['refresh_rate'] = int(m.group())
+
+            return data
+
+        except Exception as e:
+            parser_logger.error(f'open_characteristics_error: {e}')
+            return data
+
     def parse_product(self, driver: SB, url: str) -> Optional[TVCard]:
         try:
             tv_card = TVCard()
@@ -144,6 +241,16 @@ class WBParserSelenium:
             tv_card.full_price = old_price
             tv_card.currency = currency if currency else '₽'
 
+            chars = self.open_characteristics(driver)
+            tv_card.description = chars['description']
+            tv_card.os = chars['os']
+            tv_card.screen_resolution = chars['screen_resolution']
+            tv_card.matrix = chars['matrix']
+            tv_card.diagonal = chars['diagonal']
+            tv_card.refresh_rate = chars['refresh_rate']
+            if chars['brand']:
+                tv_card.brand = chars['brand']
+
             return tv_card
         except Exception as e:
             parser_logger.error(f'parse_product_error: {e}')
@@ -151,7 +258,7 @@ class WBParserSelenium:
 
 
 if __name__ == '__main__':
-    parser = WBParserSelenium(proxy_list=None, max_items=5)
+    parser = WBParserSelenium(proxy_list=None, max_items=50)
     res = parser.parse()
     if res:
         for i in res:
