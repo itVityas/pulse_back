@@ -38,7 +38,6 @@ class WBParserSelenium:
                 while True:
                     soup = BeautifulSoup(driver.get_page_source(), 'html.parser')
                     a_tags = soup.select('a[href*="/catalog/"]')
-                    print('a_tags:', len(a_tags))
                     for a_tag in a_tags:
                         link = a_tag.get('href')
                         if link and link not in links and (
@@ -67,7 +66,6 @@ class WBParserSelenium:
                         last_height = new_height
                         scroll_attemps = 0
 
-                print('links:', len(links))
                 for link in links:
                     tv_card = self.parse_product(driver, link)
                     if tv_card:
