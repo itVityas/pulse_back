@@ -79,7 +79,7 @@ class YandexParserSelenium:
 
                 return products
         except Exception as e:
-            parser_logger.error('parse_error: ' + str(e))
+            parser_logger.error(f'parse_error: {e}')
 
     def extract_description(self, driver, wait) -> str | None:
         """
@@ -431,7 +431,7 @@ class YandexParserSelenium:
 
             return tv_card
         except Exception as e:
-            parser_logger.error('parse_product_page error: ' + str(e))
+            parser_logger.error(f'parse_product_page error: {e}')
             return None
 
 

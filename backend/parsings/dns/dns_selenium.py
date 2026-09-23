@@ -37,7 +37,6 @@ class YandexParserSelenium:
                 while True:
                     soup = BeautifulSoup(driver.get_page_source(), 'html.parser')
                     a_tags = soup.select('a[href*="/product/"]')
-                    print('a_tags:', len(a_tags))
                     for a_tag in a_tags:
                         link = a_tag.get('href')
                         if link and link not in links and link.find('/product/') != -1:
@@ -64,14 +63,13 @@ class YandexParserSelenium:
                         last_height = new_height
                         scroll_attemps = 0
 
-                print('links:', len(links))
                 for link in links:
                     tv_card = self.parse_product(driver, 'https://www.dns-shop.ru' + link)
                     if tv_card:
                         products.append(tv_card)
                 return products
         except Exception as e:
-            parser_logger.warning('parse_error:', str(e))
+            parser_logger.warning(f'parse_error: {e}')
 
     def parse_price(self, soup: BeautifulSoup) -> Tuple[Optional[int], Optional[str]]:
         """
@@ -103,7 +101,7 @@ class YandexParserSelenium:
             return price, currency
 
         except Exception as e:
-            parser_logger.warning('parse_price_error:', str(e))
+            parser_logger.warning(f'parse_price_error: {e}')
             return None, None
 
     def parse_description(self, soup: BeautifulSoup) -> Optional[str]:
@@ -134,7 +132,7 @@ class YandexParserSelenium:
             return text or None
 
         except Exception as e:
-            parser_logger.warning('parse_description_error:', str(e))
+            parser_logger.warning(f'parse_description_error: {e}')
             return None
 
     def expand_characteristics(self, driver) -> bool:
@@ -155,7 +153,7 @@ class YandexParserSelenium:
             sleep(random.uniform(1.5, 3.0))
             return True
         except Exception as e:
-            parser_logger.warning('expand_characteristics_error:', str(e))
+            parser_logger.warning(f'expand_characteristics_error: {e}')
             return False
 
     def parse_characteristics(self, soup: BeautifulSoup) -> dict:
@@ -185,7 +183,7 @@ class YandexParserSelenium:
                     specs[key] = value
 
         except Exception as e:
-            parser_logger.warning('parse_characteristics_error:', str(e))
+            parser_logger.warning(f'parse_characteristics_error: {e}')
 
         return specs
 
@@ -244,11 +242,11 @@ class YandexParserSelenium:
 
             return tv_card
         except Exception as e:
-            parser_logger.warning('parse_product_error:', str(e))
+            parser_logger.warning(f'parse_product_error: {e}')
 
 
 if __name__ == '__main__':
-    parser = YandexParserSelenium(proxy_list=None, max_items=200)
+    parser = YandexParserSelenium(proxy_list=None, max_items=50)
     res = parser.parse()
     if res:
         for i in res:

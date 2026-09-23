@@ -68,7 +68,7 @@ class OzonParserSelenium:
                         products.append(tv_card)
                 return products
         except Exception as e:
-            parser_logger.warning('parse_error:', str(e))
+            parser_logger.warning(f'parse_error: {e}')
 
     def get_price(self, driver) -> Optional[Tuple[float, str]]:
         """
@@ -274,7 +274,7 @@ class OzonParserSelenium:
 
             return tv_card
         except Exception as e:
-            parser_logger.error('parse_product_error:', str(e))
+            parser_logger.error(f'parse_product_error: {e}')
 
 
 if __name__ == '__main__':
