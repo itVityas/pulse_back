@@ -59,7 +59,7 @@ class WBParserSelenium:
                         if scroll_attemps > 5:
                             scroll_height = random.randint(200, 500)
                             driver.execute_script(f"window.scrollBy(0, {scroll_height});")
-                        if scroll_attemps > 10:
+                        if scroll_attemps > 20:
                             logger.info('Достигнут конец прокрутки')
                             break
                     else:

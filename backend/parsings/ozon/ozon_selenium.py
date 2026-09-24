@@ -55,7 +55,7 @@ class OzonParserSelenium:
                         if scroll_attemps > 5:
                             scroll_height = random.randint(200, 500)
                             driver.execute_script(f"window.scrollBy(0, {scroll_height});")
-                        if scroll_attemps > 10:
+                        if scroll_attemps > 20:
                             logger.info('Достигнут конец прокрутки')
                             break
                     else:
@@ -278,7 +278,7 @@ class OzonParserSelenium:
 
 
 if __name__ == '__main__':
-    parser = OzonParserSelenium(proxy_list=None, max_items=26)
+    parser = OzonParserSelenium(proxy_list=None, max_items=100)
     res = parser.parse()
     if res:
         for i in res:
