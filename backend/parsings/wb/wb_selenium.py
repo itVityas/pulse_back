@@ -1,7 +1,8 @@
 import random
-from time import sleep
+from time import sleep, time
 import re
 from typing import Optional, List, Tuple, Dict
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from bs4 import BeautifulSoup
 from seleniumbase import SB
@@ -19,10 +20,11 @@ parser_logger = logger.bind(log_name="wb")
 
 
 class WBParserSelenium:
-    def __init__(self, proxy_list=None, max_items=50):
+    def __init__(self, proxy_list=None, max_items=50, threads=3):
         self._url = 'https://www.wildberries.ru/catalog/elektronika/tv-audio-foto-video-tehnika/televizory/televizory'
         self._proxy_list = proxy_list
         self._max_items = max_items
+        self._threads = threads
 
     def parse(self) -> List[TVCard]:
         try:
@@ -66,10 +68,22 @@ class WBParserSelenium:
                         last_height = new_height
                         scroll_attemps = 0
 
-                for link in links:
-                    tv_card = self.parse_product(driver, link)
-                    if tv_card:
-                        products.append(tv_card)
+                # for link in links:
+                #     tv_card = self.parse_product(driver, link)
+                #     if tv_card:
+                #         products.append(tv_card)
+                with ThreadPoolExecutor(max_workers=self._threads) as executor:
+                    future_to_item = [
+                        executor.submit(self.parse_product, driver, link)
+                        for link in list(links)
+                    ]
+                    for future in as_completed(future_to_item):
+                        try:
+                            result = future.result()
+                            if result:
+                                products.append(result)
+                        except Exception as e:
+                            parser_logger.error(f'thread_error: {e}')
                 return products
         except Exception as e:
             parser_logger.error(f'parse_error: {e}')
@@ -223,40 +237,42 @@ class WBParserSelenium:
 
     def parse_product(self, driver: SB, url: str) -> Optional[TVCard]:
         try:
-            tv_card = TVCard()
-            driver.uc_open_with_reconnect(url)
-            tv_card.url = url
+            with SB(uc=True, incognito=True, locale="ru", locale_code="ru") as driver:
+                tv_card = TVCard()
+                driver.uc_open_with_reconnect(url)
+                tv_card.url = url
 
-            title_el = WebDriverWait(driver, 15).until(
-                EC.visibility_of_element_located(
-                    (By.CSS_SELECTOR, 'h2[class*="productTitle"]')
+                title_el = WebDriverWait(driver, 15).until(
+                    EC.visibility_of_element_located(
+                        (By.CSS_SELECTOR, 'h2[class*="productTitle"]')
+                    )
                 )
-            )
-            tv_card.title = title_el.text.strip()
+                tv_card.title = title_el.text.strip()
 
-            price, old_price, currency = self.parse_prices(driver)
-            tv_card.discount_price = price
-            tv_card.full_price = old_price
-            tv_card.currency = currency if currency else '₽'
+                price, old_price, currency = self.parse_prices(driver)
+                tv_card.discount_price = price
+                tv_card.full_price = old_price
+                tv_card.currency = currency if currency else '₽'
 
-            chars = self.open_characteristics(driver)
-            tv_card.description = chars['description']
-            tv_card.os = chars['os']
-            tv_card.screen_resolution = chars['screen_resolution']
-            tv_card.matrix = chars['matrix']
-            tv_card.diagonal = chars['diagonal']
-            tv_card.refresh_rate = chars['refresh_rate']
-            if chars['brand']:
-                tv_card.brand = chars['brand']
+                chars = self.open_characteristics(driver)
+                tv_card.description = chars['description']
+                tv_card.os = chars['os']
+                tv_card.screen_resolution = chars['screen_resolution']
+                tv_card.matrix = chars['matrix']
+                tv_card.diagonal = chars['diagonal']
+                tv_card.refresh_rate = chars['refresh_rate']
+                if chars['brand']:
+                    tv_card.brand = chars['brand']
 
-            return tv_card
+                return tv_card
         except Exception as e:
             parser_logger.error(f'parse_product_error: {e}')
             return None
 
 
 if __name__ == '__main__':
-    parser = WBParserSelenium(proxy_list=None, max_items=50)
+    start = time()
+    parser = WBParserSelenium(proxy_list=None, max_items=100, threads=20)
     res = parser.parse()
     if res:
         for i in res:
@@ -264,3 +280,5 @@ if __name__ == '__main__':
         print(len(res))
     else:
         print('empty')
+    end = time()
+    print(f'time: {end-start}')
