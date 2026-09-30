@@ -20,10 +20,11 @@ parser_logger = logger.bind(log_name="wb")
 
 
 class WBParserSelenium:
-    def __init__(self, proxy_list=None, max_items=50, threads=3):
+    def __init__(self, proxy_list=None, max_items=50, threads=3, chunk_size=10):
         self._url = 'https://www.wildberries.ru/catalog/elektronika/tv-audio-foto-video-tehnika/televizory/televizory'
         self._proxy_list = proxy_list
         self._max_items = max_items
+        self._chunk_size = chunk_size
         self._threads = threads
 
     def parse(self) -> List[TVCard]:
@@ -72,10 +73,12 @@ class WBParserSelenium:
                 #     tv_card = self.parse_product(driver, link)
                 #     if tv_card:
                 #         products.append(tv_card)
+                links = list(links)
+                chunks = [links[i:i+self._chunk_size] for i in range(0, len(links), self._chunk_size)]
                 with ThreadPoolExecutor(max_workers=self._threads) as executor:
                     future_to_item = [
-                        executor.submit(self.parse_product, driver, link)
-                        for link in list(links)
+                        executor.submit(self.parse_bunch, driver, link)
+                        for link in chunks
                     ]
                     for future in as_completed(future_to_item):
                         try:
@@ -87,6 +90,16 @@ class WBParserSelenium:
                 return products
         except Exception as e:
             parser_logger.error(f'parse_error: {e}')
+
+    def parse_bunch(self, list_urls: list, proxy_list) -> List[TVCard]:
+        products = []
+        with SB(uc=True, incognito=True, locale="ru", locale_code="ru") as driver:
+            for url in list_urls:
+                print(1)
+                tv_card = self.parse_product(driver, url)
+                if tv_card:
+                    products.append(tv_card)
+        return products
 
     def parse_prices(self, driver: SB) -> Tuple[Optional[str], Optional[str], Optional[str]]:
         """
@@ -238,6 +251,7 @@ class WBParserSelenium:
     def parse_product(self, driver: SB, url: str) -> Optional[TVCard]:
         try:
             with SB(uc=True, incognito=True, locale="ru", locale_code="ru") as driver:
+                print(url)
                 tv_card = TVCard()
                 driver.uc_open_with_reconnect(url)
                 tv_card.url = url
@@ -264,6 +278,7 @@ class WBParserSelenium:
                 if chars['brand']:
                     tv_card.brand = chars['brand']
 
+                print(tv_card.get_dict())
                 return tv_card
         except Exception as e:
             parser_logger.error(f'parse_product_error: {e}')
@@ -272,7 +287,7 @@ class WBParserSelenium:
 
 if __name__ == '__main__':
     start = time()
-    parser = WBParserSelenium(proxy_list=None, max_items=100, threads=20)
+    parser = WBParserSelenium(proxy_list=None, max_items=100, threads=20, chunk_size=10)
     res = parser.parse()
     if res:
         for i in res:
