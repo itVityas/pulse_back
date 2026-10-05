@@ -2,7 +2,7 @@ import random
 from time import sleep, time
 import re
 from typing import Optional, List, Tuple, Dict
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import as_completed, ProcessPoolExecutor
 
 from bs4 import BeautifulSoup
 from seleniumbase import SB
@@ -37,7 +37,7 @@ class WBParserSelenium:
                 products = []
                 links = set()
                 last_height = driver.execute_script("return document.body.scrollHeight")
-                scroll_attemps = 0
+                scroll_attempts = 0
                 while True:
                     soup = BeautifulSoup(driver.get_page_source(), 'html.parser')
                     a_tags = soup.select('a[href*="/catalog/"]')
@@ -47,7 +47,7 @@ class WBParserSelenium:
                                     link.find('/catalog/') != -1 and link.endswith('detail.aspx')
                                 ):
                             links.add(link)
-                            if len(links) > self._max_items:
+                            if self._max_items != -1 and len(links) > self._max_items:
                                 break
                     parser_logger.debug(f'найдено тегов: {len(links)}')
                     if self._max_items != -1 and len(links) >= self._max_items:
@@ -58,16 +58,16 @@ class WBParserSelenium:
                     sleep(random.uniform(2.0, 4.0))
                     new_height = driver.execute_script("return document.body.scrollHeight")
                     if new_height == last_height:
-                        scroll_attemps += 1
-                        if scroll_attemps > 5:
-                            scroll_height = random.randint(200, 500)
+                        scroll_attempts += 1
+                        if scroll_attempts > 5:
+                            scroll_height = random.randint(500, 1000)
                             driver.execute_script(f"window.scrollBy(0, {scroll_height});")
-                        if scroll_attemps > 20:
+                        if scroll_attempts > 20:
                             logger.info('Достигнут конец прокрутки')
                             break
                     else:
                         last_height = new_height
-                        scroll_attemps = 0
+                        scroll_attempts = 0
 
                 # for link in links:
                 #     tv_card = self.parse_product(driver, link)
@@ -75,7 +75,7 @@ class WBParserSelenium:
                 #         products.append(tv_card)
                 links = list(links)
                 chunks = [links[i:i+self._chunk_size] for i in range(0, len(links), self._chunk_size)]
-                with ThreadPoolExecutor(max_workers=self._threads) as executor:
+                with ProcessPoolExecutor(max_workers=self._threads) as executor:
                     future_to_item = [
                         executor.submit(self.parse_bunch, bunch)
                         for bunch in chunks
