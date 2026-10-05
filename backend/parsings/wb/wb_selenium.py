@@ -278,7 +278,7 @@ class WBParserSelenium:
             return tv_card
         except Exception as e:
             parser_logger.error(f'parse_product_error: {e}')
-            return None
+            return []
 
 
 if __name__ == '__main__':
