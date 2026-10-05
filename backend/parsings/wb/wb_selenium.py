@@ -1,7 +1,7 @@
 import random
 from time import sleep, time
 import re
-from typing import Optional, List, Tuple, Dict
+from typing import Optional, List, Tuple, Dict, Any
 from concurrent.futures import as_completed, ProcessPoolExecutor
 
 from bs4 import BeautifulSoup
@@ -89,9 +89,9 @@ class WBParserSelenium:
                             parser_logger.error(f'thread_error: {e}')
                 return products
         except Exception as e:
-            parser_logger.error(f'parse_error: {e}')
+            parser_logger.opt(exception=True).error(f'parse_error: {e}')
 
-    def parse_bunch(self, list_urls: list) -> List[TVCard]:
+    def parse_bunch(self, list_urls: List[str]) -> List[TVCard]:
         products = []
         with SB(uc=True, incognito=True, locale="ru", locale_code="ru") as driver:
             for url in list_urls:
@@ -150,7 +150,7 @@ class WBParserSelenium:
         currency = match.group(2).strip()
         return price, currency
 
-    def open_characteristics(self, driver: SB) -> Dict:
+    def open_characteristics(self, driver: SB) -> Dict[Any, Any]:
         """
         Кликает по кнопке "Характеристики и описание", дожидается открытия
         бокового меню и возвращает dict с полями для TVCard.
