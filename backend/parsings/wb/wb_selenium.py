@@ -29,7 +29,7 @@ class WBParserSelenium:
 
     def parse(self) -> List[TVCard]:
         try:
-            with SB(uc=True, incognito=True, locale="ru", locale_code="ru") as driver:
+            with SB(uc=True, incognito=True, locale="ru", locale_code="ru", block_images=True) as driver:
                 driver.uc_open_with_reconnect(self._url)
                 driver.sleep(10)
                 parser_logger.info(f'start parsing: {self._url}')
@@ -93,7 +93,7 @@ class WBParserSelenium:
 
     def parse_bunch(self, list_urls: List[str]) -> List[TVCard]:
         products = []
-        with SB(uc=True, incognito=True, locale="ru", locale_code="ru") as driver:
+        with SB(uc=True, incognito=True, locale="ru", locale_code="ru", block_images=True) as driver:
             for url in list_urls:
                 tv_card = self.parse_product(driver, url)
                 if tv_card:
