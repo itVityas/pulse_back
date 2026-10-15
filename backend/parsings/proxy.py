@@ -63,8 +63,11 @@ def check_proxy(proxy_url, timeout=5):
 
 
 if __name__ == "__main__":
+    t1 = time.time()
     print("Запуск SeleniumBase для обхода защиты...")
     proxy_list = get_2ip_proxies_sb()
+    t2 = time.time()
+    print('Время выполнения:', t2-t1)
 
     print(f"\nУспешно собрано прокси: {len(proxy_list)}\n")
     for item in proxy_list:
