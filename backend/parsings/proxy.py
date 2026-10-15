@@ -57,8 +57,7 @@ def check_proxy(proxy_url, timeout=5):
             timeout=timeout
         )
         return response.status_code == 200
-    except Exception as e:
-        print(f"Proxy {proxy_url} is not working: {e}")
+    except Exception:
         return False
 
 
@@ -72,3 +71,7 @@ if __name__ == "__main__":
     print(f"\nУспешно собрано прокси: {len(proxy_list)}\n")
     for item in proxy_list:
         print(f"Прокси: {item}")
+
+    proxy = '212.44.134.166:3128'
+    is_work = check_proxy('212.44.134.166:3128')
+    print(f'{proxy}: {is_work}')

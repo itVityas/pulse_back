@@ -13,6 +13,7 @@ from loguru import logger
 
 from settings.loguru_conf import setup_logger
 from parsings.tv_card import TVCard
+from parsings.proxy import get_2ip_proxies_sb, check_proxy
 
 
 setup_logger('wb')
@@ -27,9 +28,21 @@ class WBParserSelenium:
         self._chunk_size = chunk_size
         self._threads = threads
 
+    def _get_random_proxy(self) -> Optional[str]:
+        if not self._proxy_list:
+            return None
+        for _ in range(10):
+            if self._proxy_list:
+                proxy = random.choice(self._proxy_list)
+                if check_proxy(proxy):
+                    parser_logger.info(f'использую прокси: {proxy}')
+                    return proxy
+        return None
+
     def parse(self) -> List[TVCard]:
         try:
-            with SB(uc=True, incognito=True, locale="ru", locale_code="ru", block_images=True) as driver:
+            proxy = self._get_random_proxy()
+            with SB(uc=True, incognito=True, locale="ru", locale_code="ru", block_images=True, proxy=proxy) as driver:
                 driver.uc_open_with_reconnect(self._url)
                 driver.sleep(10)
                 parser_logger.info(f'start parsing: {self._url}')
@@ -93,7 +106,8 @@ class WBParserSelenium:
 
     def parse_bunch(self, list_urls: List[str]) -> List[TVCard]:
         products = []
-        with SB(uc=True, incognito=True, locale="ru", locale_code="ru", block_images=True) as driver:
+        proxy = self._get_random_proxy()
+        with SB(uc=True, incognito=True, locale="ru", locale_code="ru", block_images=True, proxy=proxy) as driver:
             for url in list_urls:
                 tv_card = self.parse_product(driver, url)
                 if tv_card:
@@ -282,8 +296,9 @@ class WBParserSelenium:
 
 
 if __name__ == '__main__':
+    proxy_list = get_2ip_proxies_sb()
     start = time()
-    parser = WBParserSelenium(proxy_list=None, max_items=100, threads=2, chunk_size=20)
+    parser = WBParserSelenium(proxy_list=proxy_list, max_items=100, threads=2, chunk_size=20)
     res = parser.parse()
     if res:
         for i in res:
