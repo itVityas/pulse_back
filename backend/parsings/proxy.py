@@ -30,7 +30,9 @@ def get_2ip_proxies_sb():
             if len(cols) >= 2:
                 ip = cols[0].text.strip()
 
-                proxies.append(ip)
+                is_valid = check_proxy(ip)
+                if is_valid:
+                    proxies.append(ip)
 
         return proxies
 
@@ -72,6 +74,6 @@ if __name__ == "__main__":
     for item in proxy_list:
         print(f"Прокси: {item}")
 
-    proxy = '212.44.134.166:3128'
-    is_work = check_proxy('212.44.134.166:3128')
+    proxy = '113.53.29.204:8080'
+    is_work = check_proxy(proxy)
     print(f'{proxy}: {is_work}')
